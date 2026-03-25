@@ -20,7 +20,7 @@ export function createPortfolioApp(root, { locale }) {
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const state = {
-    activeProjectId: projects.find((project) => project.gallery?.length)?.id ?? projects[0]?.id ?? null,
+    activeProjectId: projects[0]?.id ?? null,
     openSection: null,
     heroInteractive: false
   };
@@ -105,24 +105,6 @@ export function createPortfolioApp(root, { locale }) {
         panels[key].bar.addEventListener("pointermove", (event) => handleSectionBarPointerMove(event, key));
         panels[key].bar.addEventListener("pointerleave", handleSectionBarPointerLeave);
         panels[key].bar.addEventListener("pointercancel", handleSectionBarPointerLeave);
-      }
-    });
-
-    refs.projectList.addEventListener("pointermove", (event) => {
-      if (!supportsFinePointer || state.openSection !== "portfolio") {
-        return;
-      }
-
-      const card = event.target.closest("[data-project-card]");
-      if (card) {
-        activateProject(card.dataset.projectId);
-      }
-    });
-
-    refs.projectList.addEventListener("focusin", (event) => {
-      const card = event.target.closest("[data-project-card]");
-      if (card) {
-        activateProject(card.dataset.projectId);
       }
     });
 
@@ -296,27 +278,23 @@ export function createPortfolioApp(root, { locale }) {
   }
 
   function activateProject(projectId) {
-    const project = projectLookup.get(projectId);
-
-    if (!projectId || !project?.gallery?.length || state.activeProjectId === projectId) {
+    if (!projectId || !projectLookup.has(projectId)) {
       return;
     }
 
-    state.activeProjectId = projectId;
+    state.activeProjectId = state.activeProjectId === projectId ? null : projectId;
     syncActiveProject(false);
   }
 
   function syncActiveProject(immediate) {
     projectRefs.forEach(({ card, trigger, detail, detailInner }) => {
-      const project = projectLookup.get(card.dataset.projectId);
-      const isExpandable = Boolean(project?.gallery?.length);
-      const isActive = isExpandable && card.dataset.projectId === state.activeProjectId;
+      const isActive = card.dataset.projectId === state.activeProjectId;
 
-      card.classList.toggle("is-expandable", isExpandable);
+      card.classList.add("is-expandable");
       card.classList.toggle("is-active", isActive);
       card.classList.toggle("is-dimmed", !isActive);
+      trigger.setAttribute("aria-pressed", String(isActive));
       trigger.setAttribute("aria-expanded", String(isActive));
-      trigger.setAttribute("aria-disabled", String(!isExpandable));
 
       gsap.to(card, {
         opacity: isActive ? 1 : 0.3,
@@ -328,6 +306,8 @@ export function createPortfolioApp(root, { locale }) {
       if (!detail || !detailInner) {
         return;
       }
+
+      detail.setAttribute("aria-hidden", String(!isActive));
 
       gsap.to(detail, {
         height: isActive ? "auto" : 0,
@@ -559,7 +539,6 @@ function renderProject(project, content) {
   const locale = content.locale;
   const meta = escapeHtml(project.meta[locale] ?? project.meta.en);
   const name = escapeHtml(project.name);
-  const hasDetail = Boolean(project.gallery?.length);
   const detailId = `${project.id}-detail`;
 
   return `
@@ -568,9 +547,10 @@ function renderProject(project, content) {
         class="project-card__summary"
         type="button"
         data-project-trigger
+        aria-pressed="false"
         aria-expanded="false"
         aria-label="${escapeHtml(`${project.name}, ${project.meta[locale] ?? project.meta.en}`)}"
-        ${hasDetail ? `aria-controls="${detailId}"` : ""}
+        aria-controls="${detailId}"
       >
         <span class="project-card__logo">
           ${renderProjectLogo(project, name)}
@@ -578,28 +558,22 @@ function renderProject(project, content) {
         <span class="project-card__meta">${meta}</span>
       </button>
 
-      ${
-        hasDetail
-          ? `
-            <div class="project-card__detail" id="${detailId}" data-project-detail>
-              <div class="project-card__detail-inner" data-project-detail-inner>
-                <div class="project-card__description">
-                  ${renderProjectDescription(project, locale)}
-                </div>
-                <div class="project-card__gallery">
-                  ${renderProjectGallery(project)}
-                </div>
-              </div>
-            </div>
-          `
-          : ""
-      }
+      <div class="project-card__detail" id="${detailId}" data-project-detail aria-hidden="true">
+        <div class="project-card__detail-inner" data-project-detail-inner>
+          <div class="project-card__description">
+            ${renderProjectDescription(project, locale)}
+          </div>
+          <div class="project-card__gallery">
+            ${renderProjectGallery(project)}
+          </div>
+        </div>
+      </div>
     </li>
   `;
 }
 
 function renderProjectLogo(project, label) {
-  if (project.logo.kind === "abmac") {
+  if (project.logo?.kind === "abmac") {
     return `
       <span class="project-logo project-logo--abmac" aria-hidden="true">
         <span class="project-logo__part project-logo__part--vector-a">
@@ -624,42 +598,63 @@ function renderProjectLogo(project, label) {
     `;
   }
 
+  if (project.logo?.kind === "image" && project.logo.src) {
+    return `
+      <span class="project-logo">
+        <img
+          class="project-logo__image ${escapeHtml(project.logo.className || "")}"
+          src="${project.logo.src}"
+          alt="${label}"
+          width="${project.logo.width}"
+          height="${project.logo.height}"
+          loading="lazy"
+        />
+      </span>
+    `;
+  }
+
+  const placeholderWidth = project.logo?.width ?? 200;
+  const placeholderHeight = project.logo?.height ?? 82;
+
   return `
-    <span class="project-logo">
-      <img
-        class="project-logo__image ${escapeHtml(project.logo.className || "")}"
-        src="${project.logo.src}"
-        alt="${label}"
-        width="${project.logo.width}"
-        height="${project.logo.height}"
-        loading="lazy"
-      />
+    <span
+      class="project-logo project-logo--placeholder"
+      aria-hidden="true"
+      style="width: ${placeholderWidth}px; aspect-ratio: ${placeholderWidth} / ${placeholderHeight};"
+    >
+      <span class="project-logo__placeholder-text">LOGO</span>
     </span>
   `;
 }
 
 function renderProjectDescription(project, locale) {
   const lines = project.description?.[locale] ?? project.description?.en ?? [];
+  const fallbackLines =
+    locale === "zh"
+      ? ["项目内容整理中，完整案例与说明稍后补充。"]
+      : ["Project details are being prepared. Full case study coming soon."];
+  const resolvedLines = lines.length ? lines : fallbackLines;
 
-  return lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("");
+  return resolvedLines.map((line) => `<p>${escapeHtml(line)}</p>`).join("");
 }
 
 function renderProjectGallery(project) {
-  return project.gallery
+  const items = project.gallery?.length
+    ? project.gallery
+    : [
+        { width: 300, height: 169 },
+        { width: 238, height: 169 },
+        { width: 238, height: 169 }
+      ];
+
+  return items
     .map(
       (item) => `
         <figure
           class="project-gallery__item"
           style="width: ${item.width}px; height: ${item.height}px;"
         >
-          <img
-            class="${escapeHtml(item.className || "project-gallery__image")}"
-            src="${item.src}"
-            alt="${escapeHtml(item.alt)}"
-            width="${item.width}"
-            height="${item.height}"
-            loading="lazy"
-          />
+          <span class="project-gallery__placeholder" aria-hidden="true"></span>
         </figure>
       `
     )
