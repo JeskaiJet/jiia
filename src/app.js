@@ -1329,7 +1329,32 @@ function renderApp(content) {
         ${renderPortfolioPanel(content)}
       </div>
 
+      ${renderAmbientLightField()}
+
+      <div class="paper-grain" aria-hidden="true"></div>
+
       ${renderImageViewer(content)}
+    </div>
+  `;
+}
+
+function renderAmbientLightField() {
+  return `
+    <div class="ambient-light-field" aria-hidden="true">
+      <div class="ambient-light-field__plane ambient-light-field__plane--shadow">
+        <span class="ambient-light-field__mass ambient-light-field__mass--shadow-a"></span>
+        <span class="ambient-light-field__mass ambient-light-field__mass--shadow-b"></span>
+        <span class="ambient-light-field__mass ambient-light-field__mass--shadow-c"></span>
+        <span class="ambient-light-field__mass ambient-light-field__mass--shadow-d"></span>
+      </div>
+
+      <div class="ambient-light-field__plane ambient-light-field__plane--light">
+        <span class="ambient-light-field__mass ambient-light-field__mass--light-a"></span>
+        <span class="ambient-light-field__mass ambient-light-field__mass--light-b"></span>
+        <span class="ambient-light-field__mass ambient-light-field__mass--light-c"></span>
+      </div>
+
+      <div class="ambient-light-field__veil"></div>
     </div>
   `;
 }
