@@ -24,6 +24,8 @@
   --header-height: 120px;
   --section-bar-height: 120px;
   --page-gutter: 40px;
+  --project-notch-width: 82px;
+  --project-notch-height: 41px;
   --hero-weight: 432;
   --hero-opsz: 411;
   --hero-track: 0.015em;
@@ -318,6 +320,7 @@ img {
 }
 
 .section-panel__inner--portfolio {
+  position: relative;
   padding: 0 0 44px;
 }
 
@@ -415,8 +418,8 @@ img {
   position: absolute;
   top: 0;
   left: 50%;
-  width: 82px;
-  height: 41px;
+  width: var(--project-notch-width);
+  height: var(--project-notch-height);
   content: "";
   border: 1px solid var(--soft);
   border-top: 0;
@@ -995,6 +998,8 @@ img {
     --header-height: 82px;
     --section-bar-height: 88px;
     --page-gutter: 18px;
+    --project-notch-width: 64px;
+    --project-notch-height: 32px;
   }
 
   .locale-link {
@@ -1030,8 +1035,8 @@ img {
   }
 
   .project-card::after {
-    width: 64px;
-    height: 32px;
+    width: var(--project-notch-width);
+    height: var(--project-notch-height);
   }
 
   .project-card__tag {
