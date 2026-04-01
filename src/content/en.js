@@ -49,6 +49,8 @@ export const enContent = {
     overline: "Selected projects",
     intro:
       "Project entries stay data-driven. Hover or focus a row to expand it and preview the current placeholder media and metadata.",
+    learnMoreLabel: "Learn More",
+    learnMoreAriaLabel: "Learn more about",
     typeLabel: "Type",
     platformLabel: "Platform",
     yearLabel: "Year"

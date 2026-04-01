@@ -49,6 +49,8 @@ export const zhContent = {
     overline: "项目列表",
     intro:
       "项目数据仍然独立维护。把鼠标移动到不同行时，条目会展开并显示占位图片、描述与标签信息。",
+    learnMoreLabel: "了解更多",
+    learnMoreAriaLabel: "查看项目详情",
     typeLabel: "类型",
     platformLabel: "平台",
     yearLabel: "年份"

@@ -9,7 +9,7 @@ const imgVector1 = "https://www.figma.com/api/mcp/asset/e9aeb798-0b18-47dd-a65a-
 const imgVector2 = "https://www.figma.com/api/mcp/asset/03199955-468d-4522-9ba1-86542d919cf6";
 const imgVector3 = "https://www.figma.com/api/mcp/asset/0c2e1ddb-69c5-407c-b602-059d1253842b";
 const imgVector2Stroke = "https://www.figma.com/api/mcp/asset/975dc6b6-c759-4b8d-8a3b-e123c5af78ca";
-const imgTreeing = "https://www.figma.com/api/mcp/asset/d42d4015-de8a-4abd-a09d-34dff526fa78";
+const imgTreeing = "https://www.figma.com/api/mcp/asset/3398cccd-797a-4c1b-a58a-3bc975efe97d";
 
 export const portfolioAssets = {
   abmac: {
@@ -25,10 +25,19 @@ export const projects = [
   {
     id: "abmac-food",
     name: "abmac",
+    theme: {
+      accent: "#1f8dff",
+      accentRgb: "31 141 255"
+    },
     meta: {
       en: "Food Service, Mobile & Web, 2025-2026",
       zh: "Food Service, Mobile & Web, 2025-2026"
     },
+    tags: [
+      { label: "Food & Beverage", showDot: true },
+      { label: "Mobile & Web", showDot: true },
+      { label: "2025-2026", showDot: true }
+    ],
     logo: {
       kind: "abmac"
     }
@@ -36,10 +45,19 @@ export const projects = [
   {
     id: "treeing",
     name: "treeing",
+    theme: {
+      accent: "#27c840",
+      accentRgb: "39 200 64"
+    },
     meta: {
       en: "Travel Platform, Mobile & Web, 2025-2026",
       zh: "Travel Platform, Mobile & Web, 2025-2026"
     },
+    tags: [
+      { label: "Travel", showDot: true },
+      { label: "Mobile & Web", showDot: true },
+      { label: "2023-2025", showDot: true }
+    ],
     logo: {
       kind: "image",
       src: imgTreeing,
@@ -95,10 +113,19 @@ export const projects = [
   {
     id: "dewey-education",
     name: "DEWEY EDUCATION",
+    theme: {
+      accent: "#f2b744",
+      accentRgb: "242 183 68"
+    },
     meta: {
       en: "Landing Page, Web, 2025",
       zh: "Landing Page, Web, 2025"
     },
+    tags: [
+      { label: "Education", showDot: true },
+      { label: "Web", showDot: false },
+      { label: "2025", showDot: false }
+    ],
     logo: {
       kind: "image",
       src: imgDeweyEducation1,
@@ -111,10 +138,19 @@ export const projects = [
   {
     id: "abmac-landing-1",
     name: "abmac",
+    theme: {
+      accent: "#1f8dff",
+      accentRgb: "31 141 255"
+    },
     meta: {
       en: "Landing Page, Web, 2025",
       zh: "Landing Page, Web, 2025"
     },
+    tags: [
+      { label: "Landing Page", showDot: true },
+      { label: "Web", showDot: true },
+      { label: "2025", showDot: true }
+    ],
     logo: {
       kind: "abmac"
     }
@@ -122,10 +158,19 @@ export const projects = [
   {
     id: "abmac-landing-2",
     name: "abmac",
+    theme: {
+      accent: "#1f8dff",
+      accentRgb: "31 141 255"
+    },
     meta: {
       en: "Landing Page, Web, 2025",
       zh: "Landing Page, Web, 2025"
     },
+    tags: [
+      { label: "Landing Page", showDot: true },
+      { label: "Web", showDot: true },
+      { label: "2025", showDot: true }
+    ],
     logo: {
       kind: "abmac"
     }

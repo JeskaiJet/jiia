@@ -3,6 +3,7 @@ import { getContent } from "./content/index.js";
 import { portfolioAssets, projects } from "./data/projects.js";
 
 const SECTION_ORDER = ["resume", "portfolio"];
+const DEFAULT_ACTIVE_PROJECT_ID = null;
 const DEFAULT_NAME_WEIGHT = 500;
 const DEFAULT_NAME_OPSZ = 411;
 const DEFAULT_NAME_TRACK = 0.015;
@@ -12,10 +13,14 @@ const MIN_NAME_OPSZ = 411;
 const MAX_NAME_OPSZ = 1200;
 const VIEWER_THUMB_HEIGHT = 64;
 const VIEWER_CONTENT_MAX_HEIGHT_RATIO = 0.88;
+const PROJECT_DETAIL_DURATION = 0.52;
+const PROJECT_DETAIL_INNER_DURATION = 0.42;
+const PROJECT_SCROLL_DURATION = 0.44;
 
 export function createPortfolioApp(root, { locale }) {
   const content = getContent(locale);
   const projectLookup = new Map(projects.map((project) => [project.id, project]));
+  const previewState = getPreviewState(window.location.search, projectLookup);
   const supportsFinePointer = window.matchMedia("(pointer: fine)").matches;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const pointerPosition = {
@@ -23,8 +28,8 @@ export function createPortfolioApp(root, { locale }) {
     y: window.innerHeight / 2
   };
   const state = {
-    activeProjectId: projects[0]?.id ?? null,
-    openSection: null,
+    activeProjectId: previewState.activeProjectId ?? DEFAULT_ACTIVE_PROJECT_ID,
+    openSection: previewState.openSection,
     heroInteractive: false,
     viewerOpen: false,
     viewerProjectId: null,
@@ -38,6 +43,7 @@ export function createPortfolioApp(root, { locale }) {
   let viewerAnimating = false;
   let pendingViewerImageRequest = 0;
   let hiddenOriginTrigger = null;
+  let pendingProjectActivationRequest = 0;
 
   root.innerHTML = renderApp(content);
 
@@ -97,6 +103,7 @@ export function createPortfolioApp(root, { locale }) {
   const projectRefs = refs.projectCards.map((card) => ({
     card,
     trigger: card.querySelector("[data-project-trigger]"),
+    gradient: card.querySelector("[data-project-gradient]"),
     detail: card.querySelector("[data-project-detail]"),
     detailInner: card.querySelector("[data-project-detail-inner]")
   }));
@@ -122,6 +129,7 @@ export function createPortfolioApp(root, { locale }) {
   bindEvents();
   scheduleImagePreload();
   runEntranceMotion();
+  syncPortfolioBarBorder();
 
   function bindEvents() {
     SECTION_ORDER.forEach((key) => {
@@ -133,6 +141,8 @@ export function createPortfolioApp(root, { locale }) {
       });
     });
 
+    panels.portfolio.body.addEventListener("scroll", syncPortfolioBarBorder, { passive: true });
+
     refs.projectList.addEventListener("click", (event) => {
       const galleryTrigger = event.target.closest("[data-project-gallery-trigger]");
       if (galleryTrigger) {
@@ -143,8 +153,7 @@ export function createPortfolioApp(root, { locale }) {
 
       const trigger = event.target.closest("[data-project-trigger]");
       if (trigger) {
-        activateProject(trigger.closest("[data-project-card]").dataset.projectId);
-        refreshCursorFromLastPointer();
+        void activateProject(trigger.closest("[data-project-card]").dataset.projectId);
       }
     });
 
@@ -164,6 +173,7 @@ export function createPortfolioApp(root, { locale }) {
     window.addEventListener("resize", () => {
       hideCursor();
       syncPanels(true);
+      syncPortfolioBarBorder();
 
       if (state.viewerOpen) {
         syncImageViewer(true);
@@ -388,6 +398,7 @@ export function createPortfolioApp(root, { locale }) {
       const isOpen = state.openSection === key;
 
       panel.node.classList.toggle("is-open", isOpen);
+      panel.node.dataset.openSettled = String(isOpen && (immediate || prefersReducedMotion));
       panel.bar.setAttribute("aria-expanded", String(isOpen));
       panel.body.setAttribute("aria-hidden", String(!isOpen));
 
@@ -399,6 +410,15 @@ export function createPortfolioApp(root, { locale }) {
         y: isOpen ? 0 : getClosedOffset(key),
         duration,
         ease: "expo.inOut",
+        onComplete: () => {
+          if (key !== "portfolio") {
+            return;
+          }
+
+          const isSettledOpen = state.openSection === key;
+          panel.node.dataset.openSettled = String(isSettledOpen);
+          syncProjectGradients(false, isSettledOpen ? "afterPanel" : "default");
+        },
         overwrite: "auto"
       });
 
@@ -417,36 +437,173 @@ export function createPortfolioApp(root, { locale }) {
         overwrite: "auto"
       });
     });
+
+    syncPortfolioBarBorder();
+    syncProjectGradients(immediate);
   }
 
-  function activateProject(projectId) {
+  function syncPortfolioBarBorder() {
+    const isScrolled = (panels.portfolio.body?.scrollTop ?? 0) > 1;
+    panels.portfolio.node.classList.toggle("is-body-scrolled", isScrolled);
+  }
+
+  async function activateProject(projectId) {
     if (!projectId || !projectLookup.has(projectId)) {
       return;
     }
 
-    state.activeProjectId = state.activeProjectId === projectId ? null : projectId;
-    if (state.activeProjectId) {
-      preloadProjectImages(state.activeProjectId);
+    const requestId = ++pendingProjectActivationRequest;
+    const nextProjectId = state.activeProjectId === projectId ? null : projectId;
+    clearProjectScrollBuffer();
+
+    if (!nextProjectId) {
+      state.activeProjectId = null;
+      syncActiveProject(false);
+      refreshCursorFromLastPointer();
+      return;
     }
+
+    preloadProjectImages(nextProjectId);
+
+    if (state.activeProjectId && state.activeProjectId !== nextProjectId) {
+      state.activeProjectId = null;
+      syncActiveProject(false);
+      await wait(getProjectToggleWaitDuration());
+      if (requestId !== pendingProjectActivationRequest) {
+        return;
+      }
+    }
+
+    await scrollProjectIntoViewBeforeExpand(nextProjectId);
+    if (requestId !== pendingProjectActivationRequest) {
+      return;
+    }
+
+    state.activeProjectId = nextProjectId;
     syncActiveProject(false);
+    refreshCursorFromLastPointer();
+
+    await wait(getProjectToggleWaitDuration());
+    if (requestId !== pendingProjectActivationRequest) {
+      return;
+    }
+
+    clearProjectScrollBuffer();
+  }
+
+  function getProjectRef(projectId) {
+    return projectRefs.find(({ card }) => card.dataset.projectId === projectId) ?? null;
+  }
+
+  function getElementTopWithinContainer(element, container) {
+    const elementRect = element.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    return container.scrollTop + elementRect.top - containerRect.top;
+  }
+
+  function getCollapsedProjectRowHeight(projectRef) {
+    return projectRef?.trigger?.offsetHeight || projectRef?.card?.offsetHeight || 120;
+  }
+
+  function getExpandedProjectDetailHeight(projectRef) {
+    return projectRef?.detailInner?.scrollHeight || 0;
+  }
+
+  function getDesiredProjectScrollTop(projectRef, scrollContainer) {
+    const collapsedHeight = getCollapsedProjectRowHeight(projectRef);
+    const detailHeight = getExpandedProjectDetailHeight(projectRef);
+    const expandedHeight = collapsedHeight + detailHeight;
+    const viewportHeight = scrollContainer.clientHeight;
+    const targetTop = getElementTopWithinContainer(projectRef.card, scrollContainer);
+    const targetCenter = targetTop + expandedHeight / 2;
+    const projectedMaxScrollTop = Math.max(0, scrollContainer.scrollHeight + detailHeight - viewportHeight);
+
+    return Math.min(projectedMaxScrollTop, Math.max(0, targetCenter - viewportHeight / 2));
+  }
+
+  function wait(ms) {
+    return new Promise((resolve) => {
+      window.setTimeout(resolve, ms);
+    });
+  }
+
+  function getProjectToggleWaitDuration() {
+    return prefersReducedMotion ? 0 : Math.max(PROJECT_DETAIL_DURATION, PROJECT_DETAIL_INNER_DURATION) * 1000;
+  }
+
+  function waitForNextFrame() {
+    return new Promise((resolve) => {
+      window.requestAnimationFrame(() => resolve());
+    });
+  }
+
+  function getProjectMaxScrollTop(scrollContainer) {
+    return Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight);
+  }
+
+  function clearProjectScrollBuffer() {
+    refs.projectList?.style.removeProperty("padding-bottom");
+  }
+
+  function ensureProjectScrollBuffer(scrollContainer, desiredScrollTop) {
+    const currentMaxScrollTop = getProjectMaxScrollTop(scrollContainer);
+    const extraScrollSpace = Math.max(0, desiredScrollTop - currentMaxScrollTop);
+
+    if (extraScrollSpace <= 1) {
+      clearProjectScrollBuffer();
+      return;
+    }
+
+    refs.projectList.style.paddingBottom = `${Math.ceil(extraScrollSpace)}px`;
+  }
+
+  function tweenScrollTop(container, scrollTop) {
+    return new Promise((resolve) => {
+      const tweenState = {
+        scrollTop: container.scrollTop
+      };
+
+      gsap.killTweensOf(tweenState);
+      gsap.to(tweenState, {
+        scrollTop,
+        duration: prefersReducedMotion ? 0 : PROJECT_SCROLL_DURATION,
+        ease: "power2.inOut",
+        overwrite: "auto",
+        onUpdate: () => {
+          container.scrollTop = tweenState.scrollTop;
+        },
+        onComplete: resolve,
+        onInterrupt: resolve
+      });
+    });
+  }
+
+  async function scrollProjectIntoViewBeforeExpand(projectId) {
+    const scrollContainer = panels.portfolio.body;
+    const projectRef = getProjectRef(projectId);
+
+    if (!scrollContainer || !projectRef || state.openSection !== "portfolio") {
+      return;
+    }
+
+    const desiredScrollTop = getDesiredProjectScrollTop(projectRef, scrollContainer);
+    ensureProjectScrollBuffer(scrollContainer, desiredScrollTop);
+    await waitForNextFrame();
+
+    const reachableScrollTop = Math.min(desiredScrollTop, getProjectMaxScrollTop(scrollContainer));
+
+    if (Math.abs(scrollContainer.scrollTop - reachableScrollTop) >= 2) {
+      await tweenScrollTop(scrollContainer, reachableScrollTop);
+    }
   }
 
   function syncActiveProject(immediate) {
     projectRefs.forEach(({ card, trigger, detail, detailInner }) => {
       const isActive = card.dataset.projectId === state.activeProjectId;
 
-      card.classList.add("is-expandable");
       card.classList.toggle("is-active", isActive);
-      card.classList.toggle("is-dimmed", !isActive);
       trigger.setAttribute("aria-pressed", String(isActive));
       trigger.setAttribute("aria-expanded", String(isActive));
-
-      gsap.to(card, {
-        opacity: isActive ? 1 : 0.3,
-        duration: immediate || prefersReducedMotion ? 0 : 0.48,
-        ease: "power3.out",
-        overwrite: "auto"
-      });
 
       if (!detail || !detailInner) {
         return;
@@ -457,7 +614,7 @@ export function createPortfolioApp(root, { locale }) {
       gsap.to(detail, {
         height: isActive ? "auto" : 0,
         autoAlpha: isActive ? 1 : 0,
-        duration: immediate || prefersReducedMotion ? 0 : 0.52,
+        duration: immediate || prefersReducedMotion ? 0 : PROJECT_DETAIL_DURATION,
         ease: "power2.out",
         overwrite: "auto"
       });
@@ -465,8 +622,35 @@ export function createPortfolioApp(root, { locale }) {
       gsap.to(detailInner, {
         autoAlpha: isActive ? 1 : 0,
         y: isActive ? 0 : 20,
-        duration: immediate || prefersReducedMotion ? 0 : 0.42,
+        duration: immediate || prefersReducedMotion ? 0 : PROJECT_DETAIL_INNER_DURATION,
         ease: "power3.out",
+        overwrite: "auto"
+      });
+    });
+
+    syncProjectGradients(immediate, "afterDetail");
+  }
+
+  function syncProjectGradients(immediate, mode = "default") {
+    const isPortfolioSettled = panels.portfolio.node.dataset.openSettled === "true";
+    const duration = immediate || prefersReducedMotion ? 0 : 0.38;
+    const detailDelay = immediate || prefersReducedMotion ? 0 : 0.48;
+    const panelDelay = immediate || prefersReducedMotion ? 0 : 0.08;
+
+    projectRefs.forEach(({ card, gradient }) => {
+      if (!gradient) {
+        return;
+      }
+
+      const isActive = card.dataset.projectId === state.activeProjectId;
+      const shouldShow = isActive && state.openSection === "portfolio" && isPortfolioSettled;
+      const delay = shouldShow ? (mode === "afterDetail" ? detailDelay : mode === "afterPanel" ? panelDelay : 0) : 0;
+
+      gsap.to(gradient, {
+        autoAlpha: shouldShow ? 1 : 0,
+        duration,
+        delay,
+        ease: "power2.out",
         overwrite: "auto"
       });
     });
@@ -1174,6 +1358,25 @@ function renderImageViewer(content) {
   `;
 }
 
+function getPreviewState(search, projectLookup) {
+  const previewValue = new URLSearchParams(search).get("preview");
+  if (!previewValue) {
+    return {
+      activeProjectId: null,
+      openSection: null
+    };
+  }
+
+  const [sectionCandidate, projectCandidate] = previewValue.split(":");
+  const openSection = SECTION_ORDER.includes(sectionCandidate) ? sectionCandidate : null;
+  const activeProjectId = projectCandidate && projectLookup.has(projectCandidate) ? projectCandidate : null;
+
+  return {
+    activeProjectId,
+    openSection
+  };
+}
+
 function renderSmallCapsName(name) {
   return name
     .trim()
@@ -1261,25 +1464,33 @@ function renderPortfolioPanel(content) {
 
 function renderProject(project, content) {
   const locale = content.locale;
-  const meta = escapeHtml(project.meta[locale] ?? project.meta.en);
   const name = escapeHtml(project.name);
   const detailId = `${project.id}-detail`;
+  const summaryLabel = escapeHtml(getProjectSummaryLabel(project, locale));
 
   return `
-    <li class="project-card" data-project-card data-project-id="${project.id}">
+    <li
+      class="project-card"
+      data-project-card
+      data-project-id="${project.id}"
+      style="${escapeHtml(getProjectThemeVars(project))}"
+    >
+      <span class="project-card__gradient" data-project-gradient aria-hidden="true"></span>
       <button
         class="project-card__summary"
         type="button"
         data-project-trigger
         aria-pressed="false"
         aria-expanded="false"
-        aria-label="${escapeHtml(`${project.name}, ${project.meta[locale] ?? project.meta.en}`)}"
+        aria-label="${summaryLabel}"
         aria-controls="${detailId}"
       >
         <span class="project-card__logo">
           ${renderProjectLogo(project, name)}
         </span>
-        <span class="project-card__meta">${meta}</span>
+        <span class="project-card__tags">
+          ${renderProjectTags(project, locale)}
+        </span>
       </button>
 
       <div class="project-card__detail" id="${detailId}" data-project-detail aria-hidden="true">
@@ -1287,6 +1498,13 @@ function renderProject(project, content) {
           <div class="project-card__description">
             ${renderProjectDescription(project, locale)}
           </div>
+          <button
+            class="project-card__learn-more"
+            type="button"
+            aria-label="${escapeHtml(`${content.portfolio.learnMoreAriaLabel} ${project.name}`)}"
+          >
+            ${escapeHtml(content.portfolio.learnMoreLabel)}
+          </button>
           <div class="project-card__gallery">
             ${renderProjectGallery(project, content)}
           </div>
@@ -1360,6 +1578,52 @@ function renderProjectDescription(project, locale) {
   const resolvedLines = lines.length ? lines : fallbackLines;
 
   return resolvedLines.map((line) => `<p>${escapeHtml(line)}</p>`).join("");
+}
+
+function renderProjectTags(project, locale) {
+  const tags = getProjectTags(project, locale);
+
+  return tags
+    .map((tag) => {
+      const dot = tag.showDot ? '<span class="project-card__tag-dot" aria-hidden="true"></span>' : "";
+      return `
+        <span class="project-card__tag">
+          <span class="project-card__tag-label">${escapeHtml(tag.label)}</span>
+          ${dot}
+        </span>
+      `;
+    })
+    .join("");
+}
+
+function getProjectTags(project, locale) {
+  if (!Array.isArray(project.tags) || project.tags.length === 0) {
+    return [];
+  }
+
+  return project.tags
+    .map((tag) => ({
+      label:
+        typeof tag.label === "string"
+          ? tag.label
+          : tag.label?.[locale] ?? tag.label?.en ?? "",
+      showDot: Boolean(tag.showDot)
+    }))
+    .filter((tag) => tag.label);
+}
+
+function getProjectSummaryLabel(project, locale) {
+  const tagsText = getProjectTags(project, locale)
+    .map((tag) => tag.label)
+    .join(", ");
+
+  return [project.name, tagsText].filter(Boolean).join(", ");
+}
+
+function getProjectThemeVars(project) {
+  const accent = project.theme?.accent ?? "#1a1a1a";
+  const accentRgb = project.theme?.accentRgb ?? "26 26 26";
+  return `--project-accent: ${accent}; --project-accent-rgb: ${accentRgb};`;
 }
 
 function renderProjectGallery(project, content) {
