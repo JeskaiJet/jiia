@@ -13,7 +13,8 @@ export const enContent = {
   },
   cursor: {
     viewLabel: "View",
-    closeLabel: "Close"
+    closeLabel: "Close",
+    backLabel: "Back"
   },
   resume: {
     label: "Resume",
@@ -54,5 +55,9 @@ export const enContent = {
     typeLabel: "Type",
     platformLabel: "Platform",
     yearLabel: "Year"
+  },
+  caseStudy: {
+    ariaLabel: "Case study",
+    backAriaLabel: "Back to portfolio"
   }
 };

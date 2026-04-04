@@ -13,7 +13,8 @@ export const zhContent = {
   },
   cursor: {
     viewLabel: "查看",
-    closeLabel: "关闭"
+    closeLabel: "关闭",
+    backLabel: "Back"
   },
   resume: {
     label: "简历",
@@ -54,5 +55,9 @@ export const zhContent = {
     typeLabel: "类型",
     platformLabel: "平台",
     yearLabel: "年份"
+  },
+  caseStudy: {
+    ariaLabel: "案例详情",
+    backAriaLabel: "返回作品集"
   }
 };
