@@ -1384,10 +1384,12 @@ export function createPortfolioApp(root, { locale }) {
     const availableHeight = Math.max(Math.min(paddedViewportHeight, maxContentHeight), 1);
     const { width: baseWidth, height: baseHeight } = getImageDimensions(item, "viewer");
     const scale = Math.min(availableWidth / baseWidth, availableHeight / baseHeight);
+    const width = Math.max(1, baseWidth * scale);
+    const height = Math.max(1, baseHeight * scale);
 
     return {
-      width: Math.max(1, Math.round(baseWidth * scale)),
-      height: Math.max(1, Math.round(baseHeight * scale))
+      width: Number.parseFloat(width.toFixed(3)),
+      height: Number.parseFloat(height.toFixed(3))
     };
   }
 
@@ -1747,6 +1749,9 @@ function renderApp(content) {
         <span class="section-cursor__label" data-section-cursor-label>${content.cursor.viewLabel}</span>
       </div>
 
+      ${renderAmbientLightField()}
+      <div class="paper-grain" aria-hidden="true"></div>
+
       <div class="home-scene" data-home-scene>
         <header class="site-header">
           <a
@@ -1771,10 +1776,6 @@ function renderApp(content) {
           ${renderResumePanel(content)}
           ${renderPortfolioPanel(content)}
         </div>
-
-        ${renderAmbientLightField()}
-
-        <div class="paper-grain" aria-hidden="true"></div>
       </div>
 
       ${renderCaseStudyLayer(content)}

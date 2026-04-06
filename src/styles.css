@@ -1457,7 +1457,7 @@ img {
     )
   );
   overflow: hidden;
-  background: var(--bg-frame);
+  background: transparent;
   will-change: transform, opacity;
 }
 
@@ -1485,14 +1485,14 @@ img {
 
 .image-viewer__media {
   position: relative;
-  background: var(--bg-frame);
+  background: transparent;
 }
 
 .image-viewer__image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  background: var(--bg-frame);
+  object-fit: cover;
+  background: transparent;
 }
 
 @keyframes paper-shadow-drift {
