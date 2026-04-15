@@ -14,6 +14,7 @@ const MAX_NAME_OPSZ = 1200;
 const VIEWER_THUMB_HEIGHT = 64;
 const VIEWER_CONTENT_MAX_HEIGHT_RATIO = 0.88;
 const VIEWER_SINGLE_CONTENT_MAX_HEIGHT_RATIO = 0.96;
+const VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD = 2500;
 const PROJECT_DETAIL_DURATION = 0.52;
 const PROJECT_DETAIL_INNER_DURATION = 0.42;
 const PROJECT_SCROLL_DURATION = 0.44;
@@ -1150,8 +1151,11 @@ export function createPortfolioApp(root, { locale }) {
     }
 
     return getCaseStudyBlocks(project, content.locale)
-      .map((block, index) => (block.media?.src ? { ...block.media, index } : null))
-      .filter(Boolean);
+      .flatMap((block, blockIndex) =>
+        [block.media, block.afterMedia].map((media, mediaIndex) => ({ media, mediaIndex, blockIndex }))
+      )
+      .filter(({ media }) => Boolean(media?.src))
+      .map(({ media, mediaIndex, blockIndex }) => ({ ...media, index: blockIndex * 10 + mediaIndex }));
   }
 
   function getProjectMediaItems(projectId) {
@@ -1377,11 +1381,22 @@ export function createPortfolioApp(root, { locale }) {
       refs.viewerFrame.removeAttribute("aria-label");
       refs.viewerFrame.style.removeProperty("width");
       refs.viewerFrame.style.removeProperty("height");
+      refs.viewerFrame.removeAttribute("data-viewer-active-item");
+      refs.viewerFrame.classList.remove("is-long-image");
+      refs.viewerFrame.scrollTop = 0;
+      refs.viewerMedia.style.removeProperty("width");
+      refs.viewerMedia.style.removeProperty("height");
       return;
     }
 
     state.viewerImageIndex = activeItem.index;
+    const activeItemKey = `${viewerRenderKey}:${activeItem.index}`;
+    const shouldResetFrameScroll = refs.viewerFrame.dataset.viewerActiveItem !== activeItemKey;
+    refs.viewerFrame.dataset.viewerActiveItem = activeItemKey;
     syncViewerFrameSize(activeItem, immediate);
+    if (shouldResetFrameScroll) {
+      refs.viewerFrame.scrollTop = 0;
+    }
     if (
       refs.viewerMedia.dataset.viewerKey !== viewerRenderKey ||
       refs.viewerMedia.querySelectorAll("[data-image-viewer-slide]").length !== items.length
@@ -1403,6 +1418,10 @@ export function createPortfolioApp(root, { locale }) {
 
   function syncViewerFrameSize(item, immediate) {
     const size = getViewerFrameSize(item);
+
+    refs.viewerMedia.style.width = `${size.width}px`;
+    refs.viewerMedia.style.height = `${size.mediaHeight}px`;
+    refs.viewerFrame.classList.toggle("is-long-image", size.isLongImage);
 
     if (immediate || !state.viewerOpen || prefersReducedMotion) {
       gsap.set(refs.viewerFrame, {
@@ -1436,13 +1455,20 @@ export function createPortfolioApp(root, { locale }) {
     const maxContentHeight = window.innerHeight * maxHeightRatio - gap - thumbLimit;
     const availableHeight = Math.max(Math.min(paddedViewportHeight, maxContentHeight), 1);
     const { width: baseWidth, height: baseHeight } = getImageDimensions(item, "viewer");
-    const scale = Math.min(availableWidth / baseWidth, availableHeight / baseHeight);
+    const widthScale = availableWidth / baseWidth;
+    const mediaHeightAtFullWidth = baseHeight * widthScale;
+    const isLongImage =
+      baseHeight > VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD && mediaHeightAtFullWidth > availableHeight;
+    const scale = isLongImage ? widthScale : Math.min(widthScale, availableHeight / baseHeight);
     const width = Math.max(1, baseWidth * scale);
-    const height = Math.max(1, baseHeight * scale);
+    const mediaHeight = Math.max(1, baseHeight * scale);
+    const height = Math.min(mediaHeight, availableHeight);
 
     return {
       width: Number.parseFloat(width.toFixed(3)),
-      height: Number.parseFloat(height.toFixed(3))
+      height: Number.parseFloat(height.toFixed(3)),
+      mediaHeight: Number.parseFloat(mediaHeight.toFixed(3)),
+      isLongImage
     };
   }
 
@@ -1615,6 +1641,11 @@ export function createPortfolioApp(root, { locale }) {
         delete refs.viewerMedia.dataset.viewerKey;
         delete refs.viewerThumbs.dataset.viewerKey;
         refs.viewerFrame.removeAttribute("aria-label");
+        refs.viewerFrame.removeAttribute("data-viewer-active-item");
+        refs.viewerFrame.classList.remove("is-long-image");
+        refs.viewerMedia.style.removeProperty("width");
+        refs.viewerMedia.style.removeProperty("height");
+        refs.viewerFrame.scrollTop = 0;
         gsap.set(refs.viewer, { autoAlpha: 0, pointerEvents: "none" });
         gsap.set(refs.viewerFrame, { clearProps: "x,y,scaleX,scaleY,transformOrigin,autoAlpha,width,height" });
         gsap.set(refs.viewerMask, { clearProps: "autoAlpha" });
@@ -2198,21 +2229,36 @@ function renderCaseStudyTags(project, locale) {
 function renderCaseStudyBlock(project, block) {
   return `
     <section class="case-study-cell" data-case-study-block>
-      ${block.media ? renderCaseStudyMedia(project, block) : ""}
+      ${block.media ? renderCaseStudyMedia(project, block, block.media, "primary") : ""}
       <div class="case-study-cell__markdown">
         ${renderMarkdown(block.markdown)}
       </div>
+      ${block.afterMedia ? renderCaseStudyMedia(project, block, block.afterMedia, "after") : ""}
     </section>
   `;
 }
 
-function renderCaseStudyMedia(project, block) {
-  const media = block.media;
-  const triggerKey = `${project.id}--${block.id}`;
+function renderCaseStudyMedia(project, block, media, position = "primary") {
+  const triggerKey = `${project.id}--${block.id}--${position}`;
+  const isLongPreview = media.height > VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD;
+  const triggerClassNames = ["case-study-cell__media-trigger"];
+  const previewWidth = Number.isFinite(media.previewWidth) ? media.previewWidth : media.width;
+  const previewHeight = Number.isFinite(media.previewHeight) ? media.previewHeight : Math.min(media.height, 2048);
+  const previewStyle = isLongPreview
+    ? ` style="--case-study-media-preview-width: ${previewWidth}; --case-study-media-preview-height: ${previewHeight};"`
+    : "";
+
+  if (isLongPreview) {
+    triggerClassNames.push("case-study-cell__media-trigger--long");
+  }
+
+  if (media.presentation) {
+    triggerClassNames.push(`case-study-cell__media-trigger--${media.presentation}`);
+  }
 
   return `
     <button
-      class="case-study-cell__media-trigger"
+      class="${triggerClassNames.join(" ")}"
       type="button"
       data-case-study-media-trigger="${triggerKey}"
       data-project-id="${project.id}"
@@ -2221,6 +2267,7 @@ function renderCaseStudyMedia(project, block) {
       data-viewer-width="${media.width}"
       data-viewer-height="${media.height}"
       aria-label="${escapeHtml(`${project.name} image`)}"
+      ${previewStyle}
     >
       <figure class="case-study-cell__media">
         <img

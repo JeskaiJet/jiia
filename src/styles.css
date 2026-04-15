@@ -763,6 +763,11 @@ img {
   cursor: pointer;
 }
 
+.case-study-cell__media-trigger--logo {
+  width: auto;
+  max-width: 100%;
+}
+
 .case-study-cell__media-trigger.is-viewer-origin-hidden .case-study-cell__media img {
   opacity: 0;
 }
@@ -772,18 +777,40 @@ img {
   margin: 0;
   border: 0.5px solid rgba(26, 26, 26, 0.4);
   background: var(--bg-frame);
+  overflow: hidden;
+}
+
+.case-study-cell__media-trigger--long .case-study-cell__media {
+  aspect-ratio: var(--case-study-media-preview-width, 2880) / var(--case-study-media-preview-height, 2048);
+}
+
+.case-study-cell__media-trigger--logo .case-study-cell__media {
+  width: max-content;
+  max-width: 100%;
+  border: 0;
+  background: transparent;
 }
 
 .case-study-cell__media img {
   display: block;
   width: 100%;
   height: auto;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: top center;
+}
+
+.case-study-cell__media-trigger--logo .case-study-cell__media img {
+  width: auto;
+  max-width: 100%;
+  height: 48px;
 }
 
 .case-study-cell__markdown {
   display: grid;
-  gap: 20px;
+  gap: clamp(12px, 1.05vw, 16px);
+  max-width: min(100%, 38rem);
+  color: rgba(26, 26, 26, 0.78);
+  text-wrap: pretty;
 }
 
 .case-study-cell__markdown > * {
@@ -794,21 +821,24 @@ img {
 .case-study-cell__markdown h2,
 .case-study-cell__markdown h3 {
   font-family: "Inter", "Noto Sans SC", sans-serif;
-  font-size: clamp(2rem, 2.23vw, 2rem);
+  color: var(--fg);
+  font-size: clamp(1.45rem, 1.62vw, 1.75rem);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
 }
 
 .case-study-cell__markdown p,
 .case-study-cell__markdown li {
-  font-size: clamp(1.125rem, 1.67vw, 1.5rem);
+  font-size: clamp(1rem, 1.02vw, 1.125rem);
   font-weight: 400;
-  line-height: 1.16;
+  line-height: 1.58;
+  letter-spacing: 0.004em;
 }
 
 .case-study-cell__markdown ul {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   padding-left: 1.1em;
 }
 
@@ -1568,10 +1598,11 @@ img {
 .project-card__description {
   display: grid;
   gap: 0;
-  max-width: 50rem;
+  max-width: 36em;
   font-size: clamp(1.125rem, 1.67vw, 1.5rem);
   font-weight: 400;
-  line-height: 1.16;
+  line-height: 1.25;
+  color: var(--fg);
 }
 
 .project-card__description p {
@@ -1731,12 +1762,41 @@ img {
   );
   overflow: hidden;
   background: transparent;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(255, 255, 255, 0.42) transparent;
+  scrollbar-width: thin;
   will-change: transform, opacity;
 }
 
+.image-viewer__frame.is-long-image {
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.image-viewer.is-single .image-viewer__frame {
+  max-height: calc(100svh - var(--viewer-top-pad) - var(--viewer-bottom-pad));
+}
+
+.image-viewer__frame::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.image-viewer__frame::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.image-viewer__frame::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.42);
+  background-clip: content-box;
+}
+
 .image-viewer__media-layer {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: 100%;
+  min-height: 100%;
 }
 
 .image-viewer__slide {
@@ -1764,7 +1824,7 @@ img {
 .image-viewer__image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   background: transparent;
 }
 
@@ -2237,19 +2297,25 @@ img {
     width: 100%;
   }
 
+  .case-study-cell__media-trigger--logo {
+    width: auto;
+  }
+
   .case-study-cell__markdown {
-    gap: 14px;
+    gap: 12px;
+    max-width: none;
   }
 
   .case-study-cell__markdown h1,
   .case-study-cell__markdown h2,
   .case-study-cell__markdown h3 {
-    font-size: clamp(1.5rem, 7vw, 2rem);
+    font-size: clamp(1.35rem, 5.8vw, 1.65rem);
   }
 
   .case-study-cell__markdown p,
   .case-study-cell__markdown li {
-    font-size: clamp(1rem, 4.8vw, 1.2rem);
+    font-size: clamp(0.98rem, 4.25vw, 1.08rem);
+    line-height: 1.62;
   }
 
   .hero-name {
@@ -2332,7 +2398,9 @@ img {
   }
 
   .project-card__description {
-    font-size: clamp(1rem, 4.8vw, 1.2rem);
+    max-width: none;
+    font-size: clamp(1.125rem, 1.67vw, 1.5rem);
+    line-height: 1.25;
   }
 
   .project-card__learn-more {
