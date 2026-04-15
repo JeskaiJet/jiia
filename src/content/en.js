@@ -4,7 +4,9 @@ export const enContent = {
     switchLabel: "中文",
     switchHref: "/zh/",
     switchLang: "zh-CN",
-    switchAriaLabel: "Switch to Chinese"
+    switchAriaLabel: "Switch to Chinese",
+    lightEffectsOnAriaLabel: "Disable light effects",
+    lightEffectsOffAriaLabel: "Enable light effects"
   },
   hero: {
     name: "CHRIS JIA",
@@ -18,30 +20,74 @@ export const enContent = {
   },
   resume: {
     label: "Resume",
-    overline: "Selected experience",
-    intro:
-      "A compact resume panel that keeps the home screen identical to the Figma comp, then expands upward only when needed.",
-    blocks: [
+    profile: {
+      name: "Chris Jia",
+      summary: "Product Designer with UI, product, and front-end execution experience.",
+      actions: [
+        {
+          label: "Contact",
+          href: "mailto:chokij@outlook.com"
+        },
+        {
+          label: "Download PDF",
+          href: "/resume/chris-jia-product-designer-4yrs.pdf",
+          download: "Chris_Jia_Product_Designer_4yrs.pdf"
+        }
+      ]
+    },
+    skillsTitle: "Skills/Tools",
+    skillGroups: [
       {
-        title: "Practice",
-        lines: [
-          "Product designer and builder working across brand systems, UI direction, and frontend implementation.",
-          "Focused on shipping minimal interfaces with a strong editorial rhythm and precise motion."
+        title: "Visual & Design",
+        accent: "#34c759",
+        items: ["Figma", "Adobe Suite", "Lottie", "Spline", "Blender"]
+      },
+      {
+        title: "Development",
+        accent: "#0a84ff",
+        items: ["HTML/CSS/JS", "Swift UI", "Astro", "Git"]
+      },
+      {
+        title: "Others",
+        accent: "#ff5f57",
+        items: ["AI Tools & Workflows", "Godot Engine", "Unity Engine", "Linux"]
+      }
+    ],
+    experiencesTitle: "Experiences",
+    experiences: [
+      {
+        title: "Insulator Bio - Product Designer",
+        period: "2024-2026",
+        paragraphs: [
+          "Led product design from 0 to 1, driving business analysis, solution definition, and iterative roadmap execution.",
+          "Integrated processes and unified experiences across modules, ensuring aligned delivery and reliable progress through cross-team collaboration."
         ]
       },
       {
-        title: "Experience",
-        lines: [
-          "2024 - Present / Independent / Product websites, visual systems, and interactive prototypes.",
-          "2021 - 2024 / Studio collaboration / Campaign pages, launch experiences, and motion design."
+        title: "Insulator Bio - UI/UX Designer",
+        period: "2022-2024",
+        paragraphs: [
+          "Responsible for end-to-end UI/UX design across multiple product modules, contributing to business analysis, interaction design, and iterative feature delivery.",
+          "Focused on improving usability and consistency by refining user flows and aligning design standards across modules, supporting efficient cross-functional implementation."
         ]
       },
       {
-        title: "Notes",
-        lines: [
-          "Replace this content with your real resume, selected clients, awards, or education details.",
-          "You can also swap this section for a downloadable PDF or a denser timeline later."
+        title: "Purvar - UI/UX Designer",
+        period: "2022",
+        paragraphs: [
+          "Responsible for both UI/UX prototyping and front-end development, mainly focusing on the maintenance of legacy projects (based on JSP) and the implementation of new requirements from design to development (Figma → Vue.js)."
         ]
+      }
+    ],
+    featuredLabel: "Featured Projects",
+    featuredProjects: [
+      {
+        projectId: "abmac-food",
+        label: "Tabmac"
+      },
+      {
+        projectId: "treeing",
+        label: "Treeing"
       }
     ]
   },

@@ -4,7 +4,9 @@ export const zhContent = {
     switchLabel: "EN",
     switchHref: "/",
     switchLang: "en",
-    switchAriaLabel: "切换到英文"
+    switchAriaLabel: "切换到英文",
+    lightEffectsOnAriaLabel: "关闭光影效果",
+    lightEffectsOffAriaLabel: "启用光影效果"
   },
   hero: {
     name: "CHRIS JIA",
@@ -18,30 +20,74 @@ export const zhContent = {
   },
   resume: {
     label: "简历",
-    overline: "履历摘要",
-    intro:
-      "默认首页保持和 Figma 一样的极简闭合状态，点击后再把简历面板向上展开，避免首屏信息过重。",
-    blocks: [
+    profile: {
+      name: "贾佳豪",
+      summary: "具备 UI、产品设计与前端落地经验的产品设计师。",
+      actions: [
+        {
+          label: "Contact",
+          href: "mailto:chokij@outlook.com"
+        },
+        {
+          label: "Download PDF",
+          href: "/resume/chris-jia-product-designer-4yrs-zh.pdf",
+          download: "贾佳豪_产品设计_4年.pdf"
+        }
+      ]
+    },
+    skillsTitle: "Skills/Tools",
+    skillGroups: [
       {
-        title: "方向",
-        lines: [
-          "产品设计师与开发者，关注品牌系统、界面方向以及最终前端落地。",
-          "偏好克制的排版、清晰的层次和足够准确的动态细节。"
+        title: "Visual & Design",
+        accent: "#34c759",
+        items: ["Figma", "Adobe Suite", "Lottie", "Spline", "Blender"]
+      },
+      {
+        title: "Development",
+        accent: "#0a84ff",
+        items: ["HTML/CSS/JS", "Swift UI", "Astro", "Git"]
+      },
+      {
+        title: "Others",
+        accent: "#ff5f57",
+        items: ["AI Tools & Workflows", "Godot Engine", "Unity Engine", "Linux"]
+      }
+    ],
+    experiencesTitle: "Experiences",
+    experiences: [
+      {
+        title: "Insulator Bio - Product Designer",
+        period: "2024-2026",
+        paragraphs: [
+          "主导产品从 0 到 1 的设计工作，覆盖业务分析、方案定义与持续迭代的路线规划。",
+          "整合跨模块流程并统一体验细节，通过跨团队协作保证方案一致性与交付稳定性。"
         ]
       },
       {
-        title: "经历",
-        lines: [
-          "2024 - 至今 / 独立合作 / 产品官网、视觉系统与交互原型。",
-          "2021 - 2024 / 工作室协作 / 活动页面、发布体验与动态设计。"
+        title: "Insulator Bio - UI/UX Designer",
+        period: "2022-2024",
+        paragraphs: [
+          "负责多个产品模块的端到端 UI/UX 设计，参与业务分析、交互设计与功能迭代交付。",
+          "通过优化用户流程和统一设计标准，持续提升产品易用性与一致性，并支持高效协作落地。"
         ]
       },
       {
-        title: "备注",
-        lines: [
-          "这里可以替换成真实简历、客户名单、奖项、教育经历或 PDF 下载入口。",
-          "如果后续你想更贴近传统 CV，也可以改成时间轴版式。"
+        title: "Purvar - UI/UX Designer",
+        period: "2022",
+        paragraphs: [
+          "同时负责 UI/UX 原型与前端实现，主要维护基于 JSP 的旧项目，并完成新需求从设计到开发的整体落地（Figma → Vue.js）。"
         ]
+      }
+    ],
+    featuredLabel: "Featured Projects",
+    featuredProjects: [
+      {
+        projectId: "abmac-food",
+        label: "Tabmac"
+      },
+      {
+        projectId: "treeing",
+        label: "Treeing"
       }
     ]
   },

@@ -18,6 +18,7 @@ const PROJECT_DETAIL_DURATION = 0.52;
 const PROJECT_DETAIL_INNER_DURATION = 0.42;
 const PROJECT_SCROLL_DURATION = 0.44;
 const CASE_STUDY_TRANSITION_DURATION = 0.72;
+const LIGHT_EFFECTS_STORAGE_KEY = "portfolio:light-effects";
 
 export function createPortfolioApp(root, { locale }) {
   const content = getContent(locale);
@@ -37,7 +38,8 @@ export function createPortfolioApp(root, { locale }) {
     viewerProjectId: null,
     viewerImageIndex: null,
     caseStudyOpen: Boolean(previewState.caseStudyProjectId),
-    caseStudyProjectId: previewState.caseStudyProjectId
+    caseStudyProjectId: previewState.caseStudyProjectId,
+    lightEffectsEnabled: getStoredLightEffectsPreference()
   };
   let activeCursorElement = null;
   let cursorHidden = true;
@@ -56,7 +58,7 @@ export function createPortfolioApp(root, { locale }) {
   let pendingProjectActivationRequest = 0;
   let caseStudyHistoryMode = state.caseStudyOpen ? "loaded" : "none";
 
-  root.innerHTML = renderApp(content);
+  root.innerHTML = renderApp(content, state);
 
   const refs = {
     appShell: root.querySelector("[data-app-shell]"),
@@ -65,6 +67,7 @@ export function createPortfolioApp(root, { locale }) {
     heroLockup: root.querySelector("[data-hero-lockup]"),
     heroName: root.querySelector("[data-hero-name]"),
     heroTagline: root.querySelector("[data-hero-tagline]"),
+    lightEffectsToggle: root.querySelector("[data-light-effects-toggle]"),
     sectionCursor: root.querySelector("[data-section-cursor]"),
     sectionCursorLabel: root.querySelector("[data-section-cursor-label]"),
     projectList: root.querySelector("[data-project-list]"),
@@ -160,6 +163,7 @@ export function createPortfolioApp(root, { locale }) {
   syncPanels(true);
   syncActiveProject(true);
   syncCaseStudy(true);
+  syncLightEffects(false);
   bindEvents();
   scheduleImagePreload();
   runEntranceMotion();
@@ -175,6 +179,12 @@ export function createPortfolioApp(root, { locale }) {
       });
     });
 
+    refs.lightEffectsToggle.addEventListener("click", () => {
+      state.lightEffectsEnabled = !state.lightEffectsEnabled;
+      syncLightEffects(true);
+    });
+
+    panels.resume.body.addEventListener("click", handleResumeClick);
     panels.portfolio.body.addEventListener("scroll", syncPortfolioBarBorder, { passive: true });
 
     refs.projectList.addEventListener("click", (event) => {
@@ -284,6 +294,16 @@ export function createPortfolioApp(root, { locale }) {
     if (!event.target.closest("[data-image-viewer-frame]")) {
       closeImageViewer();
     }
+  }
+
+  function handleResumeClick(event) {
+    const featuredProjectTrigger = event.target.closest("[data-resume-featured-project]");
+    if (!featuredProjectTrigger) {
+      return;
+    }
+
+    event.preventDefault();
+    void openPortfolioProject(featuredProjectTrigger.dataset.resumeFeaturedProject);
   }
 
   function handleCaseStudyClick(event) {
@@ -539,6 +559,39 @@ export function createPortfolioApp(root, { locale }) {
   function syncPortfolioBarBorder() {
     const isScrolled = (panels.portfolio.body?.scrollTop ?? 0) > 1;
     panels.portfolio.node.classList.toggle("is-body-scrolled", isScrolled);
+  }
+
+  function syncLightEffects(persist) {
+    refs.appShell.dataset.lightEffects = state.lightEffectsEnabled ? "on" : "off";
+    refs.lightEffectsToggle.setAttribute("aria-pressed", String(state.lightEffectsEnabled));
+    refs.lightEffectsToggle.setAttribute(
+      "aria-label",
+      state.lightEffectsEnabled ? content.site.lightEffectsOnAriaLabel : content.site.lightEffectsOffAriaLabel
+    );
+
+    if (persist) {
+      storeLightEffectsPreference(state.lightEffectsEnabled);
+    }
+  }
+
+  async function openPortfolioProject(projectId) {
+    if (!projectId || !projectLookup.has(projectId)) {
+      return;
+    }
+
+    if (state.openSection !== "portfolio") {
+      state.openSection = "portfolio";
+      syncPanels(false);
+    }
+
+    if (state.activeProjectId === projectId) {
+      syncActiveProject(false);
+      await scrollProjectIntoViewBeforeExpand(projectId);
+      refreshCursorFromLastPointer();
+      return;
+    }
+
+    await activateProject(projectId);
   }
 
   async function activateProject(projectId) {
@@ -1742,9 +1795,16 @@ function getFallbackViewerTarget(currentRect) {
   };
 }
 
-function renderApp(content) {
+function renderApp(content, state) {
   return `
-    <div class="app-shell" data-app-shell data-open-section="" data-viewer-open="false" data-case-study-open="false">
+    <div
+      class="app-shell"
+      data-app-shell
+      data-open-section=""
+      data-viewer-open="false"
+      data-case-study-open="false"
+      data-light-effects="${state.lightEffectsEnabled ? "on" : "off"}"
+    >
       <div class="section-cursor" data-section-cursor aria-hidden="true">
         <span class="section-cursor__label" data-section-cursor-label>${content.cursor.viewLabel}</span>
       </div>
@@ -1754,6 +1814,21 @@ function renderApp(content) {
 
       <div class="home-scene" data-home-scene>
         <header class="site-header">
+          <button
+            class="light-effects-toggle"
+            type="button"
+            data-light-effects-toggle
+            aria-pressed="${state.lightEffectsEnabled}"
+            aria-label="${state.lightEffectsEnabled ? content.site.lightEffectsOnAriaLabel : content.site.lightEffectsOffAriaLabel}"
+          >
+            <img
+              class="light-effects-toggle__icon"
+              src="/icons/circle-half-stroke-solid-full.svg"
+              alt=""
+              aria-hidden="true"
+            />
+          </button>
+
           <a
             class="locale-link"
             data-locale-link
@@ -1870,6 +1945,22 @@ function getPreviewState(search, projectLookup) {
   };
 }
 
+function getStoredLightEffectsPreference() {
+  try {
+    return window.localStorage.getItem(LIGHT_EFFECTS_STORAGE_KEY) !== "off";
+  } catch {
+    return true;
+  }
+}
+
+function storeLightEffectsPreference(enabled) {
+  try {
+    window.localStorage.setItem(LIGHT_EFFECTS_STORAGE_KEY, enabled ? "on" : "off");
+  } catch {
+    // localStorage can be unavailable in strict privacy contexts.
+  }
+}
+
 function renderSmallCapsName(name) {
   return name
     .trim()
@@ -1890,6 +1981,8 @@ function renderSmallCapsName(name) {
 }
 
 function renderResumePanel(content) {
+  const { resume } = content;
+
   return `
     <section class="section-panel section-panel--resume" data-section-panel="resume">
       <button
@@ -1899,34 +1992,122 @@ function renderResumePanel(content) {
         aria-expanded="false"
         aria-controls="resume-content"
       >
-        <span class="section-bar__title">${content.resume.label}</span>
+        <span class="section-bar__title">${escapeHtml(resume.label)}</span>
         <span class="section-bar__arrow" data-section-arrow>↓</span>
       </button>
 
       <div class="section-panel__body" id="resume-content" data-section-body aria-hidden="true">
-        <div class="section-panel__inner resume-layout">
-          <div class="section-copy">
-            <p class="section-copy__eyebrow">${content.resume.overline}</p>
-            <p class="section-copy__body">${content.resume.intro}</p>
-          </div>
+        <div class="section-panel__inner section-panel__inner--resume">
+          <div class="resume-sheet">
+            <div class="resume-column resume-column--left">
+              <section class="resume-cell resume-cell--profile">
+                <div class="resume-profile">
+                  <h2 class="resume-section-title">${escapeHtml(resume.profile.name)}</h2>
+                  <p class="resume-profile__summary">${escapeHtml(resume.profile.summary)}</p>
+                </div>
 
-          <div class="resume-groups">
-            ${content.resume.blocks
-              .map(
-                (block) => `
-                  <section class="resume-group">
-                    <p class="resume-group__title">${block.title}</p>
-                    <div class="resume-group__lines">
-                      ${block.lines.map((line) => `<p>${line}</p>`).join("")}
-                    </div>
-                  </section>
-                `
-              )
-              .join("")}
+                <div class="resume-actions">
+                  ${resume.profile.actions.map(renderResumeAction).join("")}
+                </div>
+              </section>
+
+              <section class="resume-cell resume-cell--scrollable">
+                <div class="resume-cell__scroll">
+                  <h2 class="resume-section-title">${escapeHtml(resume.skillsTitle)}</h2>
+                  <div class="resume-skill-groups">
+                    ${resume.skillGroups.map(renderResumeSkillGroup).join("")}
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="resume-column resume-column--right">
+              <section class="resume-cell resume-cell--scrollable resume-cell--experiences">
+                <div class="resume-cell__scroll">
+                  <h2 class="resume-section-title">${escapeHtml(resume.experiencesTitle)}</h2>
+                  <div class="resume-experience-list">
+                    ${resume.experiences.map(renderResumeExperience).join("")}
+                  </div>
+                </div>
+              </section>
+
+              <section class="resume-cell resume-cell--footer">
+                <div class="resume-featured">
+                  <p class="resume-featured__label">
+                    <span>${escapeHtml(resume.featuredLabel)}</span>
+                    <span aria-hidden="true">→</span>
+                  </p>
+
+                  <div class="resume-featured__actions">
+                    ${resume.featuredProjects.map(renderResumeFeaturedProject).join("")}
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
         </div>
       </div>
     </section>
+  `;
+}
+
+function renderResumeAction(action) {
+  const href = escapeHtml(action.href ?? "#");
+  const downloadAttribute = action.download ? ` download="${escapeHtml(action.download)}"` : "";
+
+  return `
+    <a class="resume-pill-button" href="${href}"${downloadAttribute}>
+      ${escapeHtml(action.label)}
+    </a>
+  `;
+}
+
+function renderResumeSkillGroup(group) {
+  const accent = group.accent ?? "#34c759";
+
+  return `
+    <section class="resume-skill-group">
+      <h3 class="resume-skill-group__title">${escapeHtml(group.title)}</h3>
+      <div class="resume-skill-group__items">
+        ${group.items
+          .map(
+            (item) => `
+              <span class="resume-skill-tag">
+                <span>${escapeHtml(item)}</span>
+                <span class="resume-skill-tag__dot" style="${escapeHtml(`--resume-skill-accent: ${accent};`)}" aria-hidden="true"></span>
+              </span>
+            `
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderResumeExperience(experience) {
+  return `
+    <article class="resume-experience">
+      <header class="resume-experience__header">
+        <h3 class="resume-experience__title">${escapeHtml(experience.title)}</h3>
+        <p class="resume-experience__period">${escapeHtml(experience.period)}</p>
+      </header>
+
+      <div class="resume-experience__body">
+        ${experience.paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function renderResumeFeaturedProject(project) {
+  return `
+    <button
+      class="resume-pill-button"
+      type="button"
+      data-resume-featured-project="${escapeHtml(project.projectId)}"
+    >
+      ${escapeHtml(project.label)}
+    </button>
   `;
 }
 
@@ -1975,7 +2156,7 @@ function renderCaseStudyPage(project, content) {
         data-case-study-back
         aria-label="${escapeHtml(content.caseStudy.backAriaLabel)}"
       >
-        <span class="case-study-header__arrow" aria-hidden="true">←</span>
+        <span class="case-study-header__arrow" aria-hidden="true">↑</span>
         <span class="case-study-header__brand">
           ${renderProjectLogo(project, escapeHtml(project.name))}
         </span>
@@ -2087,6 +2268,9 @@ function renderProject(project, content) {
 
       <div class="project-card__detail" id="${detailId}" data-project-detail aria-hidden="true">
         <div class="project-card__detail-inner" data-project-detail-inner>
+          <div class="project-card__gallery">
+            ${renderProjectGallery(project, content)}
+          </div>
           <div class="project-card__description">
             ${renderProjectDescription(project, locale)}
           </div>
@@ -2096,11 +2280,9 @@ function renderProject(project, content) {
             data-project-learn-more
             aria-label="${escapeHtml(`${content.portfolio.learnMoreAriaLabel} ${project.name}`)}"
           >
-            ${escapeHtml(content.portfolio.learnMoreLabel)}
+            <span>${escapeHtml(content.portfolio.learnMoreLabel)}</span>
+            <span class="project-card__learn-more-arrow" aria-hidden="true">→</span>
           </button>
-          <div class="project-card__gallery">
-            ${renderProjectGallery(project, content)}
-          </div>
         </div>
       </div>
     </li>
