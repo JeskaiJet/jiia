@@ -82,7 +82,7 @@ export const zhContent = {
     featuredLabel: "Featured Projects",
     featuredProjects: [
       {
-        projectId: "abmac-food",
+        projectId: "tabmac",
         label: "Tabmac"
       },
       {

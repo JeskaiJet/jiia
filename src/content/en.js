@@ -82,7 +82,7 @@ export const enContent = {
     featuredLabel: "Featured Projects",
     featuredProjects: [
       {
-        projectId: "abmac-food",
+        projectId: "tabmac",
         label: "Tabmac"
       },
       {

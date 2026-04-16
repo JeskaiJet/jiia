@@ -768,6 +768,10 @@ img {
   max-width: 100%;
 }
 
+.case-study-cell__media-trigger--compact-phone {
+  width: min(100%, 150px);
+}
+
 .case-study-cell__media-trigger.is-viewer-origin-hidden .case-study-cell__media img {
   opacity: 0;
 }
@@ -1441,6 +1445,12 @@ img {
 }
 
 .project-logo__image--treeing {
+  width: min(176px, 100%);
+  height: auto;
+  aspect-ratio: 129 / 63;
+}
+
+.project-logo__image--tabmac {
   width: min(149px, 100%);
   height: auto;
   aspect-ratio: 149 / 48;

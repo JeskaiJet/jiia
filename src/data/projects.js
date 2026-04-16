@@ -2,6 +2,9 @@ const imgDeweyEducation1 = "https://www.figma.com/api/mcp/asset/ce5fee3f-4743-43
 const imgTreeingBanner1 = "/images/treeing/banner.png";
 const imgTreeingWebHome1 = "/images/treeing/main_page.png";
 const imgTreeingWebHome2 = "/images/treeing/listing_page.png";
+const imgTreeingMobileMain = "/images/treeing/mobile_main.png";
+const imgTreeingMobileListing = "/images/treeing/mobile_listing.png";
+const imgTreeingMobileSearch = "/images/treeing/mobile_search.png";
 const imgTreeingSpotlight = "/images/treeing/spotlight.png";
 const imgTreeingGuestList = "/images/treeing/guest_list.png";
 const imgTreeingGuestListInvitation = "/images/treeing/guest_list_invitation.png";
@@ -10,6 +13,17 @@ const imgTreeingHostListing = "/images/treeing/host_listing.png";
 const imgTreeingHostPage = "/images/treeing/host_page.png";
 const imgTreeingBatchSet = "/images/treeing/batch_set.png";
 const imgTreeingCalendarConnect = "/images/treeing/calendar_connect.png";
+const imgTabmacLogo = "/images/tabmac/logo.png";
+const imgTabmacBanner = "/images/tabmac/banner.png";
+const imgTabmacMain = "/images/tabmac/main.png";
+const imgTabmacMap = "/images/tabmac/map.png";
+const imgTabmacStore = "/images/tabmac/store.png";
+const imgTabmacAccount = "/images/tabmac/account.png";
+const imgTabmacBusiness = "/images/tabmac/business.png";
+const imgTabmacCheckout = "/images/tabmac/checkout.png";
+const imgTabmacVenue = "/images/tabmac/venue.png";
+const imgTabmacRedeem = "/images/tabmac/redeem.png";
+const imgTabmacTip = "/images/tabmac/tip.png";
 const imgVector = "https://www.figma.com/api/mcp/asset/974064d0-e9f8-4228-a1a0-bc6d2d1fef24";
 const imgVector1 = "https://www.figma.com/api/mcp/asset/e9aeb798-0b18-47dd-a65a-636f1850ab12";
 const imgVector2 = "https://www.figma.com/api/mcp/asset/03199955-468d-4522-9ba1-86542d919cf6";
@@ -29,8 +43,8 @@ export const portfolioAssets = {
 
 export const projects = [
   {
-    id: "abmac-food",
-    name: "abmac",
+    id: "tabmac",
+    name: "Tabmac",
     theme: {
       accent: "#1f8dff",
       accentRgb: "31 141 255"
@@ -45,8 +59,237 @@ export const projects = [
       { label: "2025-2026", showDot: true }
     ],
     logo: {
-      kind: "abmac"
-    }
+      kind: "image",
+      src: imgTabmacLogo,
+      alt: "Tabmac",
+      width: 149,
+      height: 48,
+      className: "project-logo__image--tabmac"
+    },
+    description: {
+      en: [
+        "Tabmac is a subscription-based dining platform that connects users with curated restaurant experiences, while offering integrated solutions for business procurement, venue booking, and checkout."
+      ],
+      zh: [
+        "Tabmac 是一个订阅制餐饮平台，连接用户与精选餐厅体验，同时为企业采购、场地预订和结账流程提供一体化解决方案。"
+      ]
+    },
+    caseStudy: {
+      blocks: {
+        en: [
+          {
+            id: "about-tabmac",
+            column: "primary",
+            markdown: `## About Tabmac
+
+Tabmac was framed as more than a consumer dining subscription. The design needed to connect restaurant discovery, prepaid dining, business purchasing, event booking, and lightweight checkout into one platform.
+
+- Consumers needed a clear way to understand what a subscription unlocks and how to redeem it.
+- Businesses needed controls for buying, distributing, and tracking dining benefits at scale.
+- Restaurants needed add-on tools that fit existing service workflows instead of creating a separate operational layer.`
+          },
+          {
+            id: "business",
+            column: "secondary",
+            media: {
+              src: imgTabmacBusiness,
+              alt: "Tabmac Business",
+              width: 2048,
+              height: 1536
+            },
+            markdown: `Tabmac Business turns dining subscriptions into an organizational purchasing workflow.
+
+- Bulk purchase, recurring purchase, distribution rules, and teams were separated into clear management tasks.
+- Admins can decide who receives items or subscriptions, then review usage without manually tracking each redemption.
+- The design goal was to make a consumer product usable for procurement while keeping the value of the dining experience visible.`
+          },
+          {
+            id: "checkout",
+            column: "primary",
+            media: {
+              src: imgTabmacCheckout,
+              alt: "Tabmac Checkout",
+              width: 2048,
+              height: 1536
+            },
+            markdown: `Tabmac Checkout was designed as a low-friction entry point for payment.
+
+- App Clips let guests complete checkout even when they have not installed the full app.
+- This lowers adoption friction for diners and gives restaurants a payment surface that still connects back to the Tabmac ecosystem.
+- The flow focuses on speed, clarity, and confidence at the moment when users are least willing to create an account or learn a new product.`
+          },
+          {
+            id: "venue",
+            column: "secondary",
+            media: {
+              src: imgTabmacVenue,
+              alt: "Tabmac Venue booking",
+              width: 2880,
+              height: 8667,
+              previewHeight: 2048
+            },
+            markdown: `Tabmac Venue restructures private dining booking around instant clarity.
+
+- Traditional event booking requires back-and-forth communication before users can understand price, capacity, terms, and availability.
+- The interface borrows from hotel booking patterns: select a venue, review constraints, receive an instant quote, and move toward confirmation.
+- Custom quote rules help restaurants keep control while reducing manual sales work.`
+          },
+          {
+            id: "redeem",
+            column: "primary",
+            media: {
+              src: imgTabmacRedeem,
+              alt: "Tabmac Redeem",
+              width: 2048,
+              height: 1536
+            },
+            markdown: `Tabmac Redeem unifies one-off rewards and business-distributed dining benefits.
+
+- Users can redeem marketing rewards, team purchases, or subscription items through the same lightweight path.
+- App Clips support redemption without forcing users to install the full app first.
+- This makes Tabmac accessible to casual, single-use guests while still giving power users a consistent account-based experience.`
+          },
+          {
+            id: "tips",
+            column: "secondary",
+            media: {
+              src: imgTabmacTip,
+              alt: "Tabmac Tips",
+              width: 804,
+              height: 1748,
+              presentation: "compact-phone"
+            },
+            markdown: `Tips were treated as part of the payment system, not an afterthought.
+
+- Restaurants can configure suggested tip behavior around local expectations in the U.S. market.
+- Business-purchased items can include prepaid tips, removing uncertainty for employees and reducing friction at the restaurant.
+- The design keeps generosity, policy, and checkout timing aligned in one flow.`
+          }
+        ],
+        zh: [
+          {
+            id: "about-tabmac",
+            column: "primary",
+            markdown: `## About Tabmac
+
+Tabmac 的设计不只是一个面向消费者的餐饮订阅产品，而是需要把餐厅发现、预付餐饮、企业采购、场地预订和轻量结账整合到同一个平台中。
+
+- 消费者需要清楚理解订阅能兑换什么，以及如何使用。
+- 企业需要批量购买、分发和追踪餐饮权益的管理能力。
+- 餐厅需要能嵌入现有服务流程的工具，而不是额外增加一套独立运营系统。`
+          },
+          {
+            id: "business",
+            column: "secondary",
+            media: {
+              src: imgTabmacBusiness,
+              alt: "Tabmac Business",
+              width: 2048,
+              height: 1536
+            },
+            markdown: `Tabmac Business 把餐饮订阅转化为组织级采购流程。
+
+- Bulk Purchase、Recurring Purchase、Distribution 和 Teams 被拆成清晰的管理任务。
+- 管理员可以决定哪些成员获得 item 或 subscription，并查看使用情况，而不需要手动追踪每次兑换。
+- 设计目标是在保留餐饮体验价值感的同时，让这个消费级产品也能被企业采购场景使用。`
+          },
+          {
+            id: "checkout",
+            column: "primary",
+            media: {
+              src: imgTabmacCheckout,
+              alt: "Tabmac Checkout",
+              width: 2048,
+              height: 1536
+            },
+            markdown: `Tabmac Checkout 是一个低摩擦的支付入口。
+
+- 通过 App Clips，用户即使没有安装完整 App，也可以完成结账。
+- 这降低了用户 adoption 的成本，也让餐厅获得一个能接回 Tabmac 生态的支付触点。
+- 流程重点放在速度、信息清晰和支付确认感，因为结账时用户最不愿意被迫注册或学习新产品。`
+          },
+          {
+            id: "venue",
+            column: "secondary",
+            media: {
+              src: imgTabmacVenue,
+              alt: "Tabmac Venue booking",
+              width: 2880,
+              height: 8667,
+              previewHeight: 2048
+            },
+            markdown: `Tabmac Venue 的设计重点是让包场预订尽早获得清晰信息。
+
+- 传统活动预订需要反复沟通，用户才能确认价格、容量、条款和可用性。
+- 交互上借用了酒店预订模式：选择场地、查看限制、获得即时报价，再进入确认流程。
+- Instant Quote 通过自定义规则让餐厅保留控制权，同时减少人工销售沟通。`
+          },
+          {
+            id: "redeem",
+            column: "primary",
+            media: {
+              src: imgTabmacRedeem,
+              alt: "Tabmac Redeem",
+              width: 2048,
+              height: 1536
+            },
+            markdown: `Tabmac Redeem 把营销奖励和企业分发的餐饮权益合并到同一个兑换路径中。
+
+- 用户可以用同一套流程兑换活动奖励、团队购买的权益或订阅 item。
+- App Clips 让未安装完整 App 的用户也能完成兑换和下单。
+- 这样 Tabmac 既能触达一次性使用的轻量用户，也能为高频用户保持一致的账户体验。`
+          },
+          {
+            id: "tips",
+            column: "secondary",
+            media: {
+              src: imgTabmacTip,
+              alt: "Tabmac Tips",
+              width: 804,
+              height: 1748,
+              presentation: "compact-phone"
+            },
+            markdown: `Tips 被当作支付系统的一部分来设计，而不是结账后的附加选项。
+
+- 餐厅可以根据美国本地消费习惯设置推荐小费。
+- 企业批量购买的 item 可以预先支付小费，减少员工到店消费时的不确定性。
+- 这个流程把支付时机、企业政策和餐厅服务预期放在一起处理。`
+          }
+        ]
+      }
+    },
+    gallery: [
+      {
+        src: imgTabmacBanner,
+        alt: "Tabmac banner",
+        width: 300,
+        height: 169
+      },
+      {
+        src: imgTabmacMain,
+        alt: "Tabmac main screen",
+        width: 78,
+        height: 169
+      },
+      {
+        src: imgTabmacMap,
+        alt: "Tabmac map screen",
+        width: 78,
+        height: 169
+      },
+      {
+        src: imgTabmacStore,
+        alt: "Tabmac store screen",
+        width: 78,
+        height: 169
+      },
+      {
+        src: imgTabmacAccount,
+        alt: "Tabmac account screen",
+        width: 78,
+        height: 169
+      }
+    ]
   },
   {
     id: "treeing",
@@ -208,6 +451,21 @@ Treeing was framed less as another listing marketplace and more as a system for 
 - Syncing external listing data reduces duplicate maintenance.
 - Supported platforms can also use Instant Confirm, so booking status moves with the same workflow.
 - The design goal is to make Treeing easier to adopt without forcing Hosts to abandon their existing channels.`
+          },
+          {
+            id: "mobile-search",
+            column: "primary",
+            media: {
+              src: imgTreeingMobileSearch,
+              alt: "Treeing mobile search flow",
+              width: 2048,
+              height: 1536
+            },
+            markdown: `Mobile Search was designed as a focused, step-by-step flow instead of a compressed desktop search bar.
+
+- Each decision is separated into its own page or modal, so users only deal with one question at a time.
+- The flow reduces visual competition on small screens and makes destination, dates, and guests easier to confirm.
+- This keeps mobile search fast without making the interaction feel crowded or error-prone.`
           }
         ],
         zh: [
@@ -334,6 +592,21 @@ Treeing 的设计目标不是再做一个房源市场，而是把 Host 与熟客
 - 同步外部平台房源数据可以减少重复录入。
 - 在支持的平台上，Instant Confirm 还能让预订状态随流程自动同步。
 - 设计目标是降低 Treeing 的接入成本，而不是要求 Host 放弃原有渠道。`
+          },
+          {
+            id: "mobile-search",
+            column: "primary",
+            media: {
+              src: imgTreeingMobileSearch,
+              alt: "Treeing mobile search flow",
+              width: 2048,
+              height: 1536
+            },
+            markdown: `Mobile Search 的设计重点不是把桌面搜索栏压缩到移动端，而是把搜索拆成更专注的分步流程。
+
+- 每个决策被拆到独立页面或模态层中，让用户一次只处理一个问题。
+- 这样可以减少小屏幕上的视觉竞争，也让目的地、日期和人数更容易确认。
+- 最终目标是在保持搜索速度的同时，避免移动端流程显得拥挤或容易出错。`
           }
         ]
       }
@@ -357,6 +630,18 @@ Treeing 的设计目标不是再做一个房源市场，而是把 Host 与熟客
         width: 238,
         height: 169,
         className: "project-gallery__image project-gallery__image--overflow"
+      },
+      {
+        src: imgTreeingMobileMain,
+        alt: "Treeing mobile home",
+        width: 78,
+        height: 169
+      },
+      {
+        src: imgTreeingMobileListing,
+        alt: "Treeing mobile listing",
+        width: 78,
+        height: 169
       }
     ]
   },
