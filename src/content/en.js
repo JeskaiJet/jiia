@@ -30,9 +30,14 @@ export const enContent = {
           href: "mailto:chokij@outlook.com"
         },
         {
-          label: "Download PDF",
+          label: "Save Resume",
           href: "/resume/chris-jia-product-designer-4yrs.pdf",
           download: "Chris_Jia_Product_Designer_4yrs.pdf"
+        },
+        {
+          label: "Save Portfolio",
+          href: "/portfolio/Portfolio_Chris_Jia_Product_Designer.pdf",
+          download: "Portfolio_Chris_Jia_Product_Designer.pdf"
         }
       ]
     },

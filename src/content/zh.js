@@ -30,9 +30,14 @@ export const zhContent = {
           href: "mailto:chokij@outlook.com"
         },
         {
-          label: "下载简历PDF",
+          label: "保存简历",
           href: "/resume/chris-jia-product-designer-4yrs-zh.pdf",
           download: "贾佳豪_产品设计_4年.pdf"
+        },
+        {
+          label: "保存作品集",
+          href: "/portfolio/作品集_贾佳豪_产品设计.pdf",
+          download: "作品集_贾佳豪_产品设计.pdf"
         }
       ]
     },
