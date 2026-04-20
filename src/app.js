@@ -21,7 +21,7 @@ const PROJECT_SCROLL_DURATION = 0.44;
 const CASE_STUDY_TRANSITION_DURATION = 0.72;
 const LIGHT_EFFECTS_STORAGE_KEY = "portfolio:light-effects";
 
-export function createPortfolioApp(root, { locale }) {
+export function createPortfolioApp(root, { locale, deferEntranceMotion = false }) {
   const content = getContent(locale);
   const projectLookup = new Map(projects.map((project) => [project.id, project]));
   const previewState = getPreviewState(window.location.search, projectLookup);
@@ -58,6 +58,7 @@ export function createPortfolioApp(root, { locale }) {
   let hiddenOriginTrigger = null;
   let pendingProjectActivationRequest = 0;
   let caseStudyHistoryMode = state.caseStudyOpen ? "loaded" : "none";
+  let entranceMotionStarted = false;
 
   root.innerHTML = renderApp(content, state);
 
@@ -167,8 +168,14 @@ export function createPortfolioApp(root, { locale }) {
   syncLightEffects(false);
   bindEvents();
   scheduleImagePreload();
-  runEntranceMotion();
+  if (!deferEntranceMotion) {
+    startEntranceMotion();
+  }
   syncPortfolioBarBorder();
+
+  return {
+    startEntranceMotion
+  };
 
   function bindEvents() {
     SECTION_ORDER.forEach((key) => {
@@ -844,7 +851,7 @@ export function createPortfolioApp(root, { locale }) {
   }
 
   function openCaseStudy(projectId, { immediate = false, updateHistory = true, historyMode = "pushed" } = {}) {
-    if (!projectId || !projectLookup.has(projectId) || state.viewerOpen) {
+    if (!projectId || !projectLookup.has(projectId) || !hasProjectCaseStudy(projectLookup.get(projectId)) || state.viewerOpen) {
       return;
     }
 
@@ -1146,7 +1153,7 @@ export function createPortfolioApp(root, { locale }) {
 
   function getProjectCaseStudyItems(projectId) {
     const project = projectLookup.get(projectId);
-    if (!project) {
+    if (!project || !hasProjectCaseStudy(project)) {
       return [];
     }
 
@@ -1788,6 +1795,15 @@ export function createPortfolioApp(root, { locale }) {
       1.02
     );
   }
+
+  function startEntranceMotion() {
+    if (entranceMotionStarted) {
+      return;
+    }
+
+    entranceMotionStarted = true;
+    runEntranceMotion();
+  }
 }
 
 function getHeroVariation(x, y) {
@@ -1875,6 +1891,7 @@ function renderApp(content, state) {
           <div class="hero-lockup" data-hero-lockup>
             <h1 class="hero-name" data-hero-name>${renderSmallCapsName(content.hero.name)}</h1>
             <p class="hero-tagline" data-hero-tagline lang="${content.hero.taglineLang}">${content.hero.tagline}</p>
+            ${renderHeroDesktopHint(content.hero.desktopHint)}
           </div>
         </main>
 
@@ -1911,6 +1928,14 @@ function renderAmbientLightField() {
   `;
 }
 
+function renderHeroDesktopHint(label) {
+  if (!label) {
+    return "";
+  }
+
+  return `<p class="hero-desktop-hint">${escapeHtml(label)}</p>`;
+}
+
 function renderImageViewer(content) {
   return `
     <div
@@ -1945,7 +1970,7 @@ function renderCaseStudyLayer(content) {
     >
       <div class="case-study__sheet" data-case-study-sheet>
         <div class="case-study__grain" aria-hidden="true"></div>
-        ${projects.map((project) => renderCaseStudyPage(project, content)).join("")}
+        ${projects.filter(hasProjectCaseStudy).map((project) => renderCaseStudyPage(project, content)).join("")}
       </div>
     </div>
   `;
@@ -2321,18 +2346,28 @@ function renderProject(project, content) {
           <div class="project-card__description">
             ${renderProjectDescription(project, locale)}
           </div>
-          <button
-            class="project-card__learn-more"
-            type="button"
-            data-project-learn-more
-            aria-label="${escapeHtml(`${content.portfolio.learnMoreAriaLabel} ${project.name}`)}"
-          >
-            <span>${escapeHtml(content.portfolio.learnMoreLabel)}</span>
-            <span class="project-card__learn-more-arrow" aria-hidden="true">→</span>
-          </button>
+          ${renderProjectLearnMore(project, content)}
         </div>
       </div>
     </li>
+  `;
+}
+
+function renderProjectLearnMore(project, content) {
+  if (!hasProjectCaseStudy(project)) {
+    return "";
+  }
+
+  return `
+    <button
+      class="project-card__learn-more"
+      type="button"
+      data-project-learn-more
+      aria-label="${escapeHtml(`${content.portfolio.learnMoreAriaLabel} ${project.name}`)}"
+    >
+      <span>${escapeHtml(content.portfolio.learnMoreLabel)}</span>
+      <span class="project-card__learn-more-arrow" aria-hidden="true">→</span>
+    </button>
   `;
 }
 
@@ -2434,6 +2469,10 @@ function getProjectTags(project, locale) {
     .filter((tag) => tag.label);
 }
 
+function hasProjectCaseStudy(project) {
+  return project?.caseStudy !== false;
+}
+
 function getProjectSummaryLabel(project, locale) {
   const tagsText = getProjectTags(project, locale)
     .map((tag) => tag.label)
@@ -2491,6 +2530,7 @@ function renderProjectGallery(project, content) {
 
 function renderProjectMedia(item, variant) {
   const hasOverflowCrop = variant !== "viewer" && item.className?.includes("overflow");
+  const hasFirstScreenPreview = variant !== "viewer" && item.className?.includes("first-screen");
   const variantMap = {
     gallery: {
       frameClass: "project-gallery__item",
@@ -2515,7 +2555,17 @@ function renderProjectMedia(item, variant) {
     }
   };
   const config = variantMap[variant];
-  const imageClass = hasOverflowCrop ? `${config.imageClass} ${config.overflowClass}` : config.imageClass;
+  const imageClassNames = [config.imageClass];
+
+  if (hasOverflowCrop) {
+    imageClassNames.push(config.overflowClass);
+  }
+
+  if (hasFirstScreenPreview) {
+    imageClassNames.push(`${config.imageClass}--first-screen`);
+  }
+
+  const imageClass = imageClassNames.join(" ");
 
   return `
     <span class="${config.frameClass}">
@@ -2556,6 +2606,10 @@ function renderViewerThumb(item, isActive, content) {
 }
 
 function getCaseStudyBlocks(project, locale) {
+  if (!hasProjectCaseStudy(project)) {
+    return [];
+  }
+
   const localizedBlocks = project.caseStudy?.blocks?.[locale] ?? project.caseStudy?.blocks?.en;
 
   if (Array.isArray(localizedBlocks) && localizedBlocks.length) {
@@ -2667,7 +2721,8 @@ function renderInlineMarkdown(text) {
 
 function getCaseStudyProjectIdFromSearch(search, projectLookup) {
   const projectId = new URLSearchParams(search).get("case-study");
-  return projectId && projectLookup.has(projectId) ? projectId : null;
+  const project = projectId ? projectLookup.get(projectId) : null;
+  return project && hasProjectCaseStudy(project) ? projectId : null;
 }
 
 function getEscapeMap() {

@@ -73,6 +73,61 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+#app {
+  opacity: 1;
+  transition: opacity 0.56s ease;
+}
+
+body[data-loading-state="loading"] #app,
+body[data-loading-state="image-out"] #app {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body[data-loading-state="app-in"] #app,
+body[data-loading-state="done"] #app {
+  opacity: 1;
+}
+
+.site-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.56s ease, visibility 0.56s ease;
+}
+
+.site-loader__image {
+  display: block;
+  width: min(220px, 46vw);
+  height: auto;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.36s ease, transform 0.36s ease;
+}
+
+body[data-loading-state="image-out"] .site-loader__image,
+body[data-loading-state="app-in"] .site-loader__image,
+body[data-loading-state="done"] .site-loader__image {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+body[data-loading-state="app-in"] .site-loader {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body[data-loading-state="done"] .site-loader {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .paper-grain {
   position: fixed;
   top: -10rem;
@@ -946,6 +1001,16 @@ img {
   font-weight: 500;
 }
 
+.hero-desktop-hint {
+  display: none;
+  margin: 2px 0 0;
+  color: rgba(26, 26, 26, 0.46);
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: center;
+}
+
 .section-panels {
   position: relative;
   z-index: 20;
@@ -1459,7 +1524,19 @@ img {
 .project-logo__image--dewey {
   width: min(177px, 100%);
   height: auto;
-  aspect-ratio: 177 / 48;
+  aspect-ratio: 1024 / 281;
+}
+
+.project-logo__image--cathyai {
+  width: min(166px, 100%);
+  height: auto;
+  aspect-ratio: 512 / 157;
+}
+
+.project-logo__image--nebus {
+  width: min(168px, 100%);
+  height: auto;
+  aspect-ratio: 512 / 95;
 }
 
 .project-logo--placeholder {
@@ -1646,12 +1723,32 @@ img {
   gap: 40px;
   align-items: flex-start;
   overflow-x: auto;
-  padding-bottom: 8px;
-  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  padding-bottom: 16px;
+  scrollbar-color: rgb(var(--project-accent-rgb) / 0.82) rgba(26, 26, 26, 0.08);
+  scrollbar-width: thin;
 }
 
 .project-card__gallery::-webkit-scrollbar {
-  display: none;
+  height: 10px;
+}
+
+.project-card__gallery::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(26, 26, 26, 0.08);
+}
+
+.project-card__gallery::-webkit-scrollbar-thumb {
+  min-width: 42px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgb(var(--project-accent-rgb) / 0.82);
+  background-clip: content-box;
+}
+
+.project-card__gallery::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--project-accent-rgb) / 1);
+  background-clip: content-box;
 }
 
 .project-gallery__trigger {
@@ -1705,6 +1802,18 @@ img {
   height: auto;
   max-width: none;
   min-height: 420.74%;
+}
+
+.project-gallery__image--first-screen,
+.image-viewer__thumb-image--first-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  min-height: 0;
+  object-fit: contain;
 }
 
 .project-gallery__placeholder {
@@ -2178,6 +2287,12 @@ img {
 
   .project-card__gallery {
     gap: 20px;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+
+  .project-card__gallery::-webkit-scrollbar {
+    display: none;
   }
 
   .project-card__gradient::before {
@@ -2336,6 +2451,11 @@ img {
     font-size: clamp(1.1rem, 5.5vw, 1.6rem);
   }
 
+  .hero-desktop-hint {
+    display: block;
+    max-width: 20rem;
+  }
+
   .section-panel__inner {
     padding-top: 22px;
     padding-bottom: 28px;
@@ -2366,8 +2486,8 @@ img {
   }
 
   .resume-skill-group__items {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, max-content));
+    display: flex;
+    flex-wrap: wrap;
     justify-content: flex-start;
     gap: 10px;
   }
@@ -2376,6 +2496,11 @@ img {
     padding: 7px 12px;
     max-width: 100%;
     white-space: normal;
+  }
+
+  .project-logo--abmac,
+  .project-card__logo .project-logo__image {
+    width: min(104px, 100%);
   }
 
   .resume-cell--experiences .resume-cell__scroll,
@@ -2393,7 +2518,8 @@ img {
 
   .project-card__summary {
     gap: 16px;
-    padding: 20px 0 0;
+    min-height: auto;
+    padding: 22px 0 20px;
   }
 
   .project-card::after {
@@ -2434,6 +2560,15 @@ img {
 
 @media (pointer: coarse) {
   .section-cursor {
+    display: none;
+  }
+
+  .project-card__gallery {
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+
+  .project-card__gallery::-webkit-scrollbar {
     display: none;
   }
 }

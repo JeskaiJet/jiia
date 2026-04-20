@@ -1,4 +1,20 @@
-const imgDeweyEducation1 = "https://www.figma.com/api/mcp/asset/ce5fee3f-4743-43e9-8bda-f13bfaba2c38";
+const imgDeweyLogo = "/images/dewey/logo.png";
+const imgDeweyHome = "/images/dewey/home.png";
+const imgDeweyServices = "/images/dewey/services.png";
+const imgDeweyProcess = "/images/dewey/process.png";
+const imgDeweyTeam = "/images/dewey/team.png";
+const imgDeweyNews = "/images/dewey/news.png";
+const imgCathyAiLogo = "/images/cathyai/logo.png";
+const imgCathyAiHome = "/images/cathyai/home.png";
+const imgCathyAiStep1 = "/images/cathyai/step1.png";
+const imgCathyAiRecording = "/images/cathyai/recoding.png";
+const imgCathyAiForm = "/images/cathyai/form.png";
+const imgCathyAiDone = "/images/cathyai/done.png";
+const imgNebusLogo = "/images/nebus/logo.png";
+const imgNebusDesktop = "/images/nebus/desktop.png";
+const imgNebusApps = "/images/nebus/apps.png";
+const imgNebusMobile = "/images/nebus/mobile.png";
+const imgNebusRoom = "/images/nebus/room.png";
 const imgTreeingBanner1 = "/images/treeing/banner.png";
 const imgTreeingWebHome1 = "/images/treeing/main_page.png";
 const imgTreeingWebHome2 = "/images/treeing/listing_page.png";
@@ -54,8 +70,8 @@ export const projects = [
       zh: "Food Service, Mobile & Web, 2025-2026"
     },
     tags: [
-      { label: "Food & Beverage", showDot: true },
-      { label: "Mobile & Web", showDot: true },
+      { label: { en: "Food & Beverage", zh: "餐饮" }, showDot: true },
+      { label: { en: "Mobile & Web", zh: "移动端 & Web" }, showDot: true },
       { label: "2025-2026", showDot: true }
     ],
     logo: {
@@ -303,8 +319,8 @@ Tabmac 的设计不只是一个面向消费者的餐饮订阅产品，而是需�
       zh: "Travel Platform, Mobile & Web, 2025-2026"
     },
     tags: [
-      { label: "Travel", showDot: true },
-      { label: "Mobile & Web", showDot: true },
+      { label: { en: "Travel", zh: "旅行" }, showDot: true },
+      { label: { en: "Mobile & Web", zh: "移动端 & Web" }, showDot: true },
       { label: "2023-2025", showDot: true }
     ],
     logo: {
@@ -649,65 +665,201 @@ Treeing 的设计目标不是再做一个房源市场，而是把 Host 与熟客
     id: "dewey-education",
     name: "DEWEY EDUCATION",
     theme: {
-      accent: "#f2b744",
-      accentRgb: "242 183 68"
+      accent: "#000000",
+      accentRgb: "0 0 0"
     },
     meta: {
-      en: "Landing Page, Web, 2025",
-      zh: "Landing Page, Web, 2025"
+      en: "Education, Web, 2025",
+      zh: "Education, Web, 2025"
     },
     tags: [
-      { label: "Education", showDot: true },
-      { label: "Web", showDot: false },
-      { label: "2025", showDot: false }
+      { label: { en: "Education", zh: "教育" }, showDot: true },
+      { label: "Web", showDot: true },
+      { label: "2025", showDot: true }
     ],
     logo: {
       kind: "image",
-      src: imgDeweyEducation1,
+      src: imgDeweyLogo,
       alt: "DEWEY EDUCATION",
-      width: 237,
-      height: 65,
+      width: 1024,
+      height: 281,
       className: "project-logo__image--dewey"
-    }
+    },
+    description: {
+      en: [
+        "Dewey Education is a landing page for an education organization, built as an Astro-powered static site. Compared with a traditional WordPress setup, it delivers stronger performance and security while keeping deployment more flexible."
+      ],
+      zh: [
+        "Dewey Education 是一个面向教育机构的 landing page，采用 Astro 构建为静态站点。相较传统 WordPress 架构，它在性能与安全性上更具优势，同时提供更灵活的部署方案。"
+      ]
+    },
+    gallery: [
+      {
+        src: imgDeweyHome,
+        alt: "Dewey Education homepage",
+        width: 270,
+        height: 169,
+        className: "project-gallery__image--first-screen"
+      },
+      {
+        src: imgDeweyServices,
+        alt: "Dewey Education services page",
+        width: 270,
+        height: 169,
+        className: "project-gallery__image--first-screen"
+      },
+      {
+        src: imgDeweyProcess,
+        alt: "Dewey Education process page",
+        width: 270,
+        height: 169,
+        className: "project-gallery__image--first-screen"
+      },
+      {
+        src: imgDeweyTeam,
+        alt: "Dewey Education team page",
+        width: 270,
+        height: 169,
+        className: "project-gallery__image--first-screen"
+      },
+      {
+        src: imgDeweyNews,
+        alt: "Dewey Education article page",
+        width: 270,
+        height: 169,
+        className: "project-gallery__image--first-screen"
+      }
+    ],
+    caseStudy: false
   },
   {
-    id: "abmac-landing-1",
-    name: "abmac",
+    id: "cathy-ai",
+    name: "CathyAI",
     theme: {
       accent: "#1f8dff",
       accentRgb: "31 141 255"
     },
     meta: {
-      en: "Landing Page, Web, 2025",
-      zh: "Landing Page, Web, 2025"
+      en: "Law, Mobile, 2026",
+      zh: "Law, Mobile, 2026"
     },
     tags: [
-      { label: "Landing Page", showDot: true },
-      { label: "Web", showDot: true },
-      { label: "2025", showDot: true }
+      { label: { en: "Law", zh: "法律" }, showDot: true },
+      { label: { en: "Mobile", zh: "移动端" }, showDot: true },
+      { label: "2026", showDot: true }
     ],
     logo: {
-      kind: "abmac"
-    }
+      kind: "image",
+      src: imgCathyAiLogo,
+      alt: "CathyAI",
+      width: 512,
+      height: 157,
+      className: "project-logo__image--cathyai"
+    },
+    description: {
+      en: [
+        "CathyAI is a WeChat Mini Program that helps users generate legal demand letters by turning key case details into a guided input flow.",
+        "The interaction model can also support other input-to-output AI tools, reducing complex workflows into clearer, step-by-step prompts."
+      ],
+      zh: [
+        "CathyAI 是一个微信小程序，通过优化后的交互流程收集基础信息，并辅助 AI 生成律师函。",
+        "这套交互原型也可复用于其他输入-输出型 AI 工具，把复杂流程拆解成更清晰的分步引导。"
+      ]
+    },
+    gallery: [
+      {
+        src: imgCathyAiHome,
+        alt: "CathyAI home screen",
+        width: 78,
+        height: 169
+      },
+      {
+        src: imgCathyAiStep1,
+        alt: "CathyAI first step",
+        width: 78,
+        height: 169
+      },
+      {
+        src: imgCathyAiRecording,
+        alt: "CathyAI recording screen",
+        width: 78,
+        height: 169
+      },
+      {
+        src: imgCathyAiForm,
+        alt: "CathyAI form screen",
+        width: 78,
+        height: 169
+      },
+      {
+        src: imgCathyAiDone,
+        alt: "CathyAI generated result screen",
+        width: 78,
+        height: 169
+      }
+    ],
+    caseStudy: false
   },
   {
-    id: "abmac-landing-2",
-    name: "abmac",
+    id: "nebus",
+    name: "NEBUS",
     theme: {
-      accent: "#1f8dff",
-      accentRgb: "31 141 255"
+      accent: "#137EFB",
+      accentRgb: "19 126 251"
     },
     meta: {
-      en: "Landing Page, Web, 2025",
-      zh: "Landing Page, Web, 2025"
+      en: "Communication, Desktop & Mobile, 2022-2023",
+      zh: "Communication, Desktop & Mobile, 2022-2023"
     },
     tags: [
-      { label: "Landing Page", showDot: true },
-      { label: "Web", showDot: true },
-      { label: "2025", showDot: true }
+      { label: { en: "Communication", zh: "通讯" }, showDot: true },
+      { label: { en: "Desktop & Mobile", zh: "桌面端 & 移动端" }, showDot: true },
+      { label: "2022-2023", showDot: true }
     ],
     logo: {
-      kind: "abmac"
-    }
+      kind: "image",
+      src: imgNebusLogo,
+      alt: "NEBUS",
+      width: 512,
+      height: 95,
+      className: "project-logo__image--nebus"
+    },
+    description: {
+      en: [
+        "NEBUS is a decentralized B2B communication tool built with security and privacy as the product baseline.",
+        "Based on an open-source foundation, it was customized into a highly extensible and configurable system that can adapt to different organization workflows across desktop and mobile."
+      ],
+      zh: [
+        "NEBUS 是一款去中心化的 2B 通讯工具，以安全与隐私优先作为产品基础。",
+        "项目基于开源项目定制构建，并扩展为高度可配置、可定制的系统，支持不同组织在桌面端与移动端的通讯协作流程。"
+      ]
+    },
+    gallery: [
+      {
+        src: imgNebusDesktop,
+        alt: "NEBUS desktop interface",
+        width: 238,
+        height: 169
+      },
+      {
+        src: imgNebusApps,
+        alt: "NEBUS app integrations",
+        width: 238,
+        height: 169
+      },
+      {
+        src: imgNebusMobile,
+        alt: "NEBUS mobile interface",
+        width: 78,
+        height: 169
+      },
+      {
+        src: imgNebusRoom,
+        alt: "NEBUS mobile room",
+        width: 78,
+        height: 169
+      }
+    ],
+    caseStudy: false
   }
 ];

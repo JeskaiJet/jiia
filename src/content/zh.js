@@ -9,9 +9,10 @@ export const zhContent = {
     lightEffectsOffAriaLabel: "启用光影效果"
   },
   hero: {
-    name: "CHRIS JIA",
-    tagline: "是一位产品设计师与开发者",
-    taglineLang: "zh-CN"
+    name: "Chris Jia",
+    tagline: "is a product designer & builder",
+    taglineLang: "en",
+    desktopHint: "For better experience, view it on desktop."
   },
   cursor: {
     viewLabel: "查看",
@@ -21,39 +22,39 @@ export const zhContent = {
   resume: {
     label: "简历",
     profile: {
-      name: "贾佳豪",
+      name: "Chris Jia/贾佳豪",
       summary: "具备 UI、产品设计与前端落地经验的产品设计师。",
       actions: [
         {
-          label: "Contact",
+          label: "联系我",
           href: "mailto:chokij@outlook.com"
         },
         {
-          label: "Download PDF",
+          label: "下载简历PDF",
           href: "/resume/chris-jia-product-designer-4yrs-zh.pdf",
           download: "贾佳豪_产品设计_4年.pdf"
         }
       ]
     },
-    skillsTitle: "Skills/Tools",
+    skillsTitle: "技能/工具",
     skillGroups: [
       {
-        title: "Visual & Design",
+        title: "视觉与设计",
         accent: "#34c759",
         items: ["Figma", "Adobe Suite", "Lottie", "Spline", "Blender"]
       },
       {
-        title: "Development",
+        title: "开发",
         accent: "#0a84ff",
         items: ["HTML/CSS/JS", "Swift UI", "Astro", "Git"]
       },
       {
-        title: "Others",
+        title: "其他",
         accent: "#ff5f57",
         items: ["AI Tools & Workflows", "Godot Engine", "Unity Engine", "Linux"]
       }
     ],
-    experiencesTitle: "Experiences",
+    experiencesTitle: "工作经历",
     experiences: [
       {
         title: "Insulator Bio - Product Designer",
@@ -79,7 +80,7 @@ export const zhContent = {
         ]
       }
     ],
-    featuredLabel: "Featured Projects",
+    featuredLabel: "精选项目",
     featuredProjects: [
       {
         projectId: "tabmac",

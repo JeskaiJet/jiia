@@ -11,7 +11,8 @@ export const enContent = {
   hero: {
     name: "CHRIS JIA",
     tagline: "is a product designer & builder",
-    taglineLang: "en"
+    taglineLang: "en",
+    desktopHint: "For better experience, view it on desktop."
   },
   cursor: {
     viewLabel: "View",
