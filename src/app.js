@@ -40,7 +40,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     viewerImageIndex: null,
     caseStudyOpen: Boolean(previewState.caseStudyProjectId),
     caseStudyProjectId: previewState.caseStudyProjectId,
-    lightEffectsEnabled: getStoredLightEffectsPreference()
+    lightEffectsEnabled: getStoredLightEffectsPreference({ prefersReducedMotion })
   };
   let activeCursorElement = null;
   let cursorHidden = true;
@@ -59,6 +59,8 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   let pendingProjectActivationRequest = 0;
   let caseStudyHistoryMode = state.caseStudyOpen ? "loaded" : "none";
   let entranceMotionStarted = false;
+  let pendingPointerFrame = 0;
+  let latestPointerTarget = null;
 
   root.innerHTML = renderApp(content, state);
 
@@ -222,6 +224,13 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerout", (event) => {
       if (!event.relatedTarget) {
+        latestPointerTarget = null;
+
+        if (pendingPointerFrame) {
+          window.cancelAnimationFrame(pendingPointerFrame);
+          pendingPointerFrame = 0;
+        }
+
         hideCursor();
       }
 
@@ -272,16 +281,27 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   function handlePointerMove(event) {
     pointerPosition.x = event.clientX;
     pointerPosition.y = event.clientY;
+    latestPointerTarget = event.target;
 
-    if (state.heroInteractive && !state.caseStudyOpen) {
-      const { weight, opsz } = getHeroVariation(event.clientX, event.clientY);
+    if (pendingPointerFrame) {
+      return;
+    }
+
+    pendingPointerFrame = window.requestAnimationFrame(flushPointerMove);
+  }
+
+  function flushPointerMove() {
+    pendingPointerFrame = 0;
+
+    if (supportsFinePointer && state.heroInteractive && !state.caseStudyOpen && !prefersReducedMotion) {
+      const { weight, opsz } = getHeroVariation(pointerPosition.x, pointerPosition.y);
 
       animateNameWeight(weight);
       animateNameOpsz(opsz);
     }
 
-    if (supportsFinePointer) {
-      syncCursorFromTarget(event.target, event.clientX, event.clientY);
+    if (supportsFinePointer && latestPointerTarget) {
+      syncCursorFromTarget(latestPointerTarget, pointerPosition.x, pointerPosition.y);
     }
   }
 
@@ -2001,12 +2021,22 @@ function getPreviewState(search, projectLookup) {
   };
 }
 
-function getStoredLightEffectsPreference() {
+function getStoredLightEffectsPreference({ prefersReducedMotion } = {}) {
   try {
-    return window.localStorage.getItem(LIGHT_EFFECTS_STORAGE_KEY) !== "off";
+    const storedPreference = window.localStorage.getItem(LIGHT_EFFECTS_STORAGE_KEY);
+
+    if (storedPreference === "off") {
+      return false;
+    }
+
+    if (storedPreference === "on") {
+      return true;
+    }
   } catch {
-    return true;
+    // Fall through to the device-aware default below.
   }
+
+  return shouldEnableLightEffectsByDefault({ prefersReducedMotion });
 }
 
 function storeLightEffectsPreference(enabled) {
@@ -2015,6 +2045,38 @@ function storeLightEffectsPreference(enabled) {
   } catch {
     // localStorage can be unavailable in strict privacy contexts.
   }
+}
+
+function shouldEnableLightEffectsByDefault({ prefersReducedMotion } = {}) {
+  if (prefersReducedMotion) {
+    return false;
+  }
+
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+  if (connection?.saveData) {
+    return false;
+  }
+
+  const deviceMemory = Number(navigator.deviceMemory);
+  if (Number.isFinite(deviceMemory) && deviceMemory <= 4) {
+    return false;
+  }
+
+  const hardwareConcurrency = Number(navigator.hardwareConcurrency);
+  if (Number.isFinite(hardwareConcurrency) && hardwareConcurrency <= 4) {
+    return false;
+  }
+
+  if (window.matchMedia?.("(pointer: coarse)")?.matches) {
+    return false;
+  }
+
+  if (window.matchMedia?.("(update: slow)")?.matches) {
+    return false;
+  }
+
+  return true;
 }
 
 function renderSmallCapsName(name) {
