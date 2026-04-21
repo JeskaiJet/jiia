@@ -2052,6 +2052,10 @@ function shouldEnableLightEffectsByDefault({ prefersReducedMotion } = {}) {
     return false;
   }
 
+  if (isAppleMobileDevice()) {
+    return true;
+  }
+
   const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
   if (connection?.saveData) {
@@ -2077,6 +2081,18 @@ function shouldEnableLightEffectsByDefault({ prefersReducedMotion } = {}) {
   }
 
   return true;
+}
+
+function isAppleMobileDevice() {
+  const platform = navigator.userAgentData?.platform ?? navigator.platform ?? "";
+  const userAgent = navigator.userAgent ?? "";
+  const maxTouchPoints = Number(navigator.maxTouchPoints) || 0;
+
+  if (/iPhone|iPad|iPod/i.test(userAgent) || /iPhone|iPad|iPod/i.test(platform)) {
+    return true;
+  }
+
+  return /Mac/i.test(platform) && maxTouchPoints > 1;
 }
 
 function renderSmallCapsName(name) {
