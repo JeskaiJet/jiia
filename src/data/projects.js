@@ -1,3 +1,6 @@
+import treeingCaseStudyEn from "../content/case-studies/treeing.en.mdx?raw";
+import treeingCaseStudyZh from "../content/case-studies/treeing.zh.mdx?raw";
+
 const imgDeweyLogo = "/images/dewey/logo.png";
 const imgDeweyHome = "/images/dewey/home.png";
 const imgDeweyServices = "/images/dewey/services.png";
@@ -342,6 +345,10 @@ Tabmac 的设计不只是一个面向消费者的餐饮订阅产品，而是需�
       ]
     },
     caseStudy: {
+      mdx: {
+        en: treeingCaseStudyEn,
+        zh: treeingCaseStudyZh
+      },
       blocks: {
         en: [
           {

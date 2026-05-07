@@ -15,6 +15,8 @@ const VIEWER_THUMB_HEIGHT = 64;
 const VIEWER_CONTENT_MAX_HEIGHT_RATIO = 0.88;
 const VIEWER_SINGLE_CONTENT_MAX_HEIGHT_RATIO = 0.96;
 const VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD = 2500;
+const HORIZONTAL_SCROLL_THUMB_MIN_WIDTH = 30;
+const HORIZONTAL_SCROLL_THUMB_MAX_WIDTH = 74;
 const PROJECT_DETAIL_DURATION = 0.52;
 const PROJECT_DETAIL_INNER_DURATION = 0.42;
 const PROJECT_SCROLL_DURATION = 0.44;
@@ -26,6 +28,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   const projectLookup = new Map(projects.map((project) => [project.id, project]));
   const previewState = getPreviewState(window.location.search, projectLookup);
   const supportsFinePointer = window.matchMedia("(pointer: fine)").matches;
+  const supportsCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const pointerPosition = {
     x: window.innerWidth / 2,
@@ -60,6 +63,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   let caseStudyHistoryMode = state.caseStudyOpen ? "loaded" : "none";
   let entranceMotionStarted = false;
   let pendingPointerFrame = 0;
+  let pendingHorizontalScrollbarFrame = 0;
   let latestPointerTarget = null;
 
   root.innerHTML = renderApp(content, state);
@@ -168,6 +172,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   syncActiveProject(true);
   syncCaseStudy(true);
   syncLightEffects(false);
+  setupHorizontalScrollbars();
   bindEvents();
   scheduleImagePreload();
   if (!deferEntranceMotion) {
@@ -243,6 +248,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
       hideCursor();
       syncPanels(true);
       syncPortfolioBarBorder();
+      scheduleHorizontalScrollbarUpdate();
 
       if (state.viewerOpen) {
         syncImageViewer(true);
@@ -351,6 +357,225 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
       event.preventDefault();
       requestCloseCaseStudy();
     }
+  }
+
+  function setupHorizontalScrollbars() {
+    root.querySelectorAll("[data-horizontal-scroll-area]").forEach((area) => {
+      const scrollbar = area.parentElement?.querySelector("[data-horizontal-scrollbar]");
+      const track = scrollbar?.querySelector("[data-horizontal-scrollbar-track]");
+      const thumb = scrollbar?.querySelector("[data-horizontal-scrollbar-thumb]");
+
+      if (!scrollbar || !track || !thumb) {
+        return;
+      }
+
+      let dragStartX = 0;
+      let dragStartScrollLeft = 0;
+      let draggingPointerId = null;
+      let pendingThumbFrame = 0;
+      let pendingDragFrame = 0;
+      let pendingDragScrollLeft = 0;
+      const scrollMetrics = {
+        maxScrollLeft: 0,
+        trackWidth: 0,
+        thumbWidth: 0,
+        maxThumbX: 1,
+        visible: false
+      };
+      const scrollState = {
+        scrollLeft: area.scrollLeft
+      };
+      const smoothScrollTo = gsap.quickTo(scrollState, "scrollLeft", {
+        duration: prefersReducedMotion ? 0 : 0.22,
+        ease: "power3.out",
+        onUpdate: () => {
+          area.scrollLeft = scrollState.scrollLeft;
+        }
+      });
+
+      const getTrackWidth = () => scrollbar.clientWidth || track.clientWidth || area.clientWidth;
+      const getThumbWidth = (trackWidth) =>
+        Math.max(
+          HORIZONTAL_SCROLL_THUMB_MIN_WIDTH,
+          Math.min(HORIZONTAL_SCROLL_THUMB_MAX_WIDTH, trackWidth, (area.clientWidth / area.scrollWidth) * trackWidth)
+        );
+      const measureScrollbar = () => {
+        scrollMetrics.maxScrollLeft = Math.max(0, area.scrollWidth - area.clientWidth);
+        scrollMetrics.trackWidth = getTrackWidth();
+        scrollMetrics.visible = !supportsCoarsePointer && scrollMetrics.maxScrollLeft > 1 && scrollMetrics.trackWidth > 0;
+        scrollMetrics.thumbWidth = scrollMetrics.visible ? getThumbWidth(scrollMetrics.trackWidth) : 0;
+        scrollMetrics.maxThumbX = Math.max(1, scrollMetrics.trackWidth - scrollMetrics.thumbWidth);
+      };
+      const renderThumb = () => {
+        if (!scrollMetrics.visible) {
+          thumb.style.removeProperty("width");
+          thumb.style.removeProperty("transform");
+          return;
+        }
+
+        const thumbX =
+          scrollMetrics.maxScrollLeft > 0 ? (area.scrollLeft / scrollMetrics.maxScrollLeft) * scrollMetrics.maxThumbX : 0;
+
+        thumb.style.width = `${scrollMetrics.thumbWidth}px`;
+        thumb.style.transform = `translate(${thumbX}px, -50%)`;
+      };
+      const scheduleThumbRender = () => {
+        if (pendingThumbFrame) {
+          return;
+        }
+
+        pendingThumbFrame = window.requestAnimationFrame(() => {
+          pendingThumbFrame = 0;
+          renderThumb();
+        });
+      };
+      const setAreaScrollLeft = (scrollLeft, immediate = false) => {
+        const maxScrollLeft = scrollMetrics.maxScrollLeft || Math.max(0, area.scrollWidth - area.clientWidth);
+        const nextScrollLeft = Math.min(Math.max(scrollLeft, 0), maxScrollLeft);
+
+        if (immediate || prefersReducedMotion) {
+          gsap.killTweensOf(scrollState);
+          scrollState.scrollLeft = nextScrollLeft;
+          area.scrollLeft = nextScrollLeft;
+          scheduleThumbRender();
+          return;
+        }
+
+        smoothScrollTo(nextScrollLeft);
+      };
+      const scheduleDragScroll = (scrollLeft) => {
+        pendingDragScrollLeft = scrollLeft;
+
+        if (pendingDragFrame) {
+          return;
+        }
+
+        pendingDragFrame = window.requestAnimationFrame(() => {
+          pendingDragFrame = 0;
+          setAreaScrollLeft(pendingDragScrollLeft, true);
+        });
+      };
+
+      const update = () => {
+        measureScrollbar();
+
+        scrollbar.classList.toggle("is-visible", scrollMetrics.visible);
+        scrollbar.setAttribute("aria-hidden", String(!scrollMetrics.visible));
+        renderThumb();
+      };
+
+      area.addEventListener(
+        "scroll",
+        () => {
+          scrollState.scrollLeft = area.scrollLeft;
+          scheduleThumbRender();
+        },
+        { passive: true }
+      );
+      track.addEventListener("pointerdown", (event) => {
+        if (event.target === thumb) {
+          return;
+        }
+
+        update();
+        const trackRect = track.getBoundingClientRect();
+        const thumbRect = thumb.getBoundingClientRect();
+        const targetX = event.clientX - trackRect.left - thumbRect.width / 2;
+
+        setAreaScrollLeft((Math.min(Math.max(targetX, 0), scrollMetrics.maxThumbX) / scrollMetrics.maxThumbX) * scrollMetrics.maxScrollLeft);
+      });
+
+      thumb.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        update();
+        dragStartX = event.clientX;
+        dragStartScrollLeft = area.scrollLeft;
+        scrollState.scrollLeft = area.scrollLeft;
+        draggingPointerId = event.pointerId;
+        if (thumb.setPointerCapture) {
+          try {
+            thumb.setPointerCapture(event.pointerId);
+          } catch {
+            // Pointer capture can fail for synthetic events; dragging still works with the local id guard.
+          }
+        }
+        scrollbar.classList.add("is-dragging");
+      });
+
+      thumb.addEventListener("pointermove", (event) => {
+        if (draggingPointerId !== event.pointerId) {
+          return;
+        }
+
+        const scrollDelta = ((event.clientX - dragStartX) / scrollMetrics.maxThumbX) * scrollMetrics.maxScrollLeft;
+
+        scheduleDragScroll(dragStartScrollLeft + scrollDelta);
+      });
+
+      thumb.addEventListener("pointerup", (event) => {
+        if (thumb.hasPointerCapture?.(event.pointerId)) {
+          thumb.releasePointerCapture(event.pointerId);
+        }
+
+        draggingPointerId = null;
+        scrollbar.classList.remove("is-dragging");
+      });
+
+      thumb.addEventListener("pointercancel", (event) => {
+        if (thumb.hasPointerCapture?.(event.pointerId)) {
+          thumb.releasePointerCapture(event.pointerId);
+        }
+
+        draggingPointerId = null;
+        scrollbar.classList.remove("is-dragging");
+      });
+
+      update();
+    });
+
+    scheduleHorizontalScrollbarUpdate();
+  }
+
+  function scheduleHorizontalScrollbarUpdate() {
+    if (pendingHorizontalScrollbarFrame) {
+      return;
+    }
+
+    pendingHorizontalScrollbarFrame = window.requestAnimationFrame(() => {
+      pendingHorizontalScrollbarFrame = 0;
+      root.querySelectorAll("[data-horizontal-scrollbar].is-visible, [data-horizontal-scrollbar]").forEach((scrollbar) => {
+        const area = scrollbar.parentElement?.querySelector("[data-horizontal-scroll-area]");
+        const track = scrollbar.querySelector("[data-horizontal-scrollbar-track]");
+        const thumb = scrollbar.querySelector("[data-horizontal-scrollbar-thumb]");
+
+        if (!area || !track || !thumb) {
+          return;
+        }
+
+        const maxScrollLeft = Math.max(0, area.scrollWidth - area.clientWidth);
+        const trackWidth = scrollbar.clientWidth || track.clientWidth || area.clientWidth;
+        const isVisible = !supportsCoarsePointer && maxScrollLeft > 1 && trackWidth > 0;
+
+        scrollbar.classList.toggle("is-visible", isVisible);
+        scrollbar.setAttribute("aria-hidden", String(!isVisible));
+
+        if (!isVisible) {
+          thumb.style.removeProperty("width");
+          thumb.style.removeProperty("transform");
+          return;
+        }
+
+        const thumbWidth = Math.max(
+          HORIZONTAL_SCROLL_THUMB_MIN_WIDTH,
+          Math.min(HORIZONTAL_SCROLL_THUMB_MAX_WIDTH, trackWidth, (area.clientWidth / area.scrollWidth) * trackWidth)
+        );
+        const maxThumbX = Math.max(0, trackWidth - thumbWidth);
+        const thumbX = maxScrollLeft > 0 ? (area.scrollLeft / maxScrollLeft) * maxThumbX : 0;
+
+        thumb.style.width = `${thumbWidth}px`;
+        thumb.style.transform = `translate(${thumbX}px, -50%)`;
+      });
+    });
   }
 
   function syncCursorFromTarget(target, x, y) {
@@ -804,6 +1029,8 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     });
 
     syncProjectGradients(immediate, "afterDetail");
+    scheduleHorizontalScrollbarUpdate();
+    window.setTimeout(scheduleHorizontalScrollbarUpdate, getProjectToggleWaitDuration() + 40);
   }
 
   function syncProjectGradients(immediate, mode = "default") {
@@ -963,6 +1190,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
         gsap.set(refs.homeScene, { x: -window.innerWidth });
         gsap.set(refs.caseStudy, { x: 0 });
       }
+      scheduleHorizontalScrollbarUpdate();
       return;
     }
 
@@ -1175,6 +1403,11 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     const project = projectLookup.get(projectId);
     if (!project || !hasProjectCaseStudy(project)) {
       return [];
+    }
+
+    const mdxSource = getLocalizedCaseStudyMdx(project, content.locale);
+    if (mdxSource) {
+      return getCaseStudyMdxMediaItems(mdxSource).map((media, index) => ({ ...media, index }));
     }
 
     return getCaseStudyBlocks(project, content.locale)
@@ -2272,6 +2505,12 @@ function renderPortfolioPanel(content) {
 
 function renderCaseStudyPage(project, content) {
   const locale = content.locale;
+  const mdxSource = getLocalizedCaseStudyMdx(project, locale);
+
+  if (mdxSource) {
+    return renderCaseStudyMdxPage(project, content, mdxSource);
+  }
+
   const blocks = getCaseStudyBlocks(project, locale);
   const primaryBlocks = blocks.filter((block) => (block.column ?? "primary") !== "secondary");
   const secondaryBlocks = blocks.filter((block) => (block.column ?? "primary") === "secondary");
@@ -2311,6 +2550,243 @@ function renderCaseStudyPage(project, content) {
         </div>
       </div>
     </article>
+  `;
+}
+
+function renderCaseStudyMdxPage(project, content, mdxSource) {
+  const parsed = parseCaseStudyMdx(mdxSource);
+
+  return `
+    <article
+      class="case-study-page case-study-page--mdx"
+      data-case-study-page="${project.id}"
+      style="${escapeHtml(getProjectThemeVars(project))}"
+      aria-hidden="true"
+      hidden
+    >
+      <button
+        class="case-study-header"
+        type="button"
+        data-case-study-back
+        aria-label="${escapeHtml(content.caseStudy.backAriaLabel)}"
+      >
+        <span class="case-study-header__arrow" aria-hidden="true">↑</span>
+        <span class="case-study-header__brand">
+          ${renderProjectLogo(project, escapeHtml(project.name))}
+        </span>
+        <span class="case-study-header__spacer" aria-hidden="true"></span>
+        <span class="case-study-header__tags">
+          ${renderCaseStudyTags(project, content.locale)}
+        </span>
+      </button>
+
+      <div class="case-study-page__body case-study-page__body--mdx" data-case-study-scroll>
+        <div class="case-study-mdx">
+          ${renderCaseStudyMdxHero(project, parsed.hero)}
+          ${parsed.sections.map((section, index) => renderCaseStudyMdxSection(project, section, index)).join("")}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderCaseStudyMdxHero(project, hero) {
+  const title = hero.title || project.name;
+  const subtitle = hero.subtitle || "";
+  const metaItems = [
+    ["Role", hero.role],
+    ["Scope", hero.scope],
+    ["Timeline", hero.timeline],
+    ["Platform", hero.platform]
+  ].filter(([, value]) => Boolean(value));
+
+  return `
+    <header class="case-study-mdx-hero">
+      <div class="case-study-mdx-hero__copy">
+        <p class="case-study-mdx-hero__eyebrow">Case Study</p>
+        <h1>${escapeHtml(title)}</h1>
+        ${subtitle ? `<p class="case-study-mdx-hero__subtitle">${escapeHtml(subtitle)}</p>` : ""}
+      </div>
+      ${
+        metaItems.length
+          ? `
+            <dl class="case-study-mdx-hero__meta">
+              ${metaItems
+                .map(
+                  ([label, value]) => `
+                    <div class="case-study-mdx-hero__meta-item">
+                      <dt>${escapeHtml(label)}</dt>
+                      <dd>${escapeHtml(value)}</dd>
+                    </div>
+                  `
+                )
+                .join("")}
+            </dl>
+          `
+          : ""
+      }
+    </header>
+  `;
+}
+
+function renderCaseStudyMdxSection(project, section, index) {
+  const sectionNumber = String(index + 1).padStart(2, "0");
+
+  return `
+    <section class="case-study-mdx-section">
+      <header class="case-study-mdx-section__header">
+        <span class="case-study-mdx-section__index">${sectionNumber}</span>
+        <h2>${escapeHtml(section.title)}</h2>
+      </header>
+      ${section.wideImage ? renderCaseStudyMdxWideImage(project, section.wideImage, `section-${index}-wide`) : ""}
+      ${
+        section.markdown
+          ? `
+            <div class="case-study-mdx-section__body">
+              ${renderMarkdown(section.markdown)}
+            </div>
+          `
+          : ""
+      }
+      ${section.cardGroups
+        .map((cardGroup, groupIndex) => renderCaseStudyMdxCardGroup(project, cardGroup, `section-${index}-group-${groupIndex}`))
+        .join("")}
+    </section>
+  `;
+}
+
+function renderCaseStudyMdxWideImage(project, image, triggerKey) {
+  if (isMdxPlaceholder(image)) {
+    return renderCaseStudyMdxPlaceholder(image, "case-study-mdx-wide-image");
+  }
+
+  return renderCaseStudyMdxMediaButton(project, image, triggerKey, {
+    buttonClassName: "case-study-mdx-wide-image",
+    figureClassName: "case-study-mdx-wide-image__frame",
+    imageClassName: "case-study-mdx-wide-image__image"
+  });
+}
+
+function renderCaseStudyMdxCardGroup(project, cards, groupKey) {
+  if (!cards.length) {
+    return "";
+  }
+
+  return `
+    <div class="horizontal-scroll-shell case-study-mdx-card-group-shell">
+      <div class="case-study-mdx-card-group" data-horizontal-scroll-area aria-label="Case study cards">
+        ${cards.map((card, index) => renderCaseStudyMdxCard(project, card, `${groupKey}-card-${index}`)).join("")}
+      </div>
+      ${renderHorizontalScrollbar()}
+    </div>
+  `;
+}
+
+function renderCaseStudyMdxCard(project, card, triggerKey) {
+  const title = card.title ?? "";
+  const text = card.text ?? "";
+  const hasImage = Boolean(card.image);
+
+  return `
+    <article class="case-study-mdx-card${hasImage ? " case-study-mdx-card--media" : ""}">
+      ${
+        hasImage
+          ? renderCaseStudyMdxMediaButton(
+              project,
+              {
+                src: card.image,
+                alt: card.alt ?? title,
+                width: card.width,
+                height: card.height,
+                previewWidth: card.previewWidth,
+                previewHeight: card.previewHeight
+              },
+              triggerKey,
+              {
+                buttonClassName: "case-study-mdx-card__media-button",
+                figureClassName: "case-study-mdx-card__media",
+                imageClassName: "case-study-mdx-card__image"
+              }
+            )
+          : ""
+      }
+      <div class="case-study-mdx-card__body">
+        ${title ? `<h3>${escapeHtml(title)}</h3>` : ""}
+        ${text ? `<p>${renderInlineMarkdown(text)}</p>` : ""}
+      </div>
+    </article>
+  `;
+}
+
+function renderCaseStudyMdxMediaButton(project, media, triggerKey, { buttonClassName, figureClassName, imageClassName }) {
+  const width = parseMdxDimension(media.width);
+  const height = parseMdxDimension(media.height);
+  const alt = media.alt ?? "";
+  const isLongPreview = height > VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD;
+  const hasCustomPreviewHeight = media.previewHeight !== undefined;
+  const previewWidth = parseMdxDimension(media.previewWidth ?? width);
+  const previewHeight = hasCustomPreviewHeight ? parseMdxDimension(media.previewHeight) : Math.min(height, 2048);
+  const hasPreviewCrop = isLongPreview || hasCustomPreviewHeight;
+  const className = [
+    buttonClassName,
+    isLongPreview ? "case-study-mdx-media-button--long" : "",
+    hasPreviewCrop ? "case-study-mdx-media-button--preview-crop" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const style = [
+    `--case-study-mdx-media-width: ${width}`,
+    `--case-study-mdx-media-height: ${height}`,
+    `--case-study-mdx-media-preview-width: ${previewWidth}`,
+    `--case-study-mdx-media-preview-height: ${previewHeight}`
+  ].join("; ");
+
+  return `
+    <button
+      class="${className}"
+      type="button"
+      data-case-study-media-trigger="${escapeHtml(`${project.id}--mdx--${triggerKey}`)}"
+      data-project-id="${escapeHtml(project.id)}"
+      data-viewer-src="${escapeHtml(media.src)}"
+      data-viewer-alt="${escapeHtml(alt)}"
+      data-viewer-width="${width}"
+      data-viewer-height="${height}"
+      aria-label="${escapeHtml(`${project.name} image`)}"
+      style="${escapeHtml(style)}"
+    >
+      <figure class="${figureClassName}">
+        <img
+          class="${imageClassName}"
+          src="${escapeHtml(media.src)}"
+          alt="${escapeHtml(alt)}"
+          width="${width}"
+          height="${height}"
+          loading="lazy"
+        />
+      </figure>
+    </button>
+  `;
+}
+
+function renderCaseStudyMdxPlaceholder(attributes, className) {
+  const title = attributes.title || "Visual placeholder";
+  const text = attributes.text || "Placeholder for a future visual.";
+
+  return `
+    <figure class="${className} ${className}--placeholder">
+      <span class="${className}__placeholder-label">${escapeHtml(title)}</span>
+      <figcaption>${escapeHtml(text)}</figcaption>
+    </figure>
+  `;
+}
+
+function renderHorizontalScrollbar() {
+  return `
+    <div class="horizontal-scrollbar" data-horizontal-scrollbar aria-hidden="true">
+      <div class="horizontal-scrollbar__track" data-horizontal-scrollbar-track>
+        <div class="horizontal-scrollbar__thumb" data-horizontal-scrollbar-thumb></div>
+      </div>
+    </div>
   `;
 }
 
@@ -2418,8 +2894,11 @@ function renderProject(project, content) {
 
       <div class="project-card__detail" id="${detailId}" data-project-detail aria-hidden="true">
         <div class="project-card__detail-inner" data-project-detail-inner>
-          <div class="project-card__gallery">
-            ${renderProjectGallery(project, content)}
+          <div class="horizontal-scroll-shell project-card__gallery-shell">
+            <div class="project-card__gallery" data-horizontal-scroll-area>
+              ${renderProjectGallery(project, content)}
+            </div>
+            ${renderHorizontalScrollbar()}
           </div>
           <div class="project-card__description">
             ${renderProjectDescription(project, locale)}
@@ -2683,6 +3162,11 @@ function renderViewerThumb(item, isActive, content) {
   `;
 }
 
+function getLocalizedCaseStudyMdx(project, locale) {
+  const source = project.caseStudy?.mdx?.[locale] ?? project.caseStudy?.mdx?.en ?? "";
+  return typeof source === "string" && source.trim() ? source : "";
+}
+
 function getCaseStudyBlocks(project, locale) {
   if (!hasProjectCaseStudy(project)) {
     return [];
@@ -2723,6 +3207,204 @@ function getFallbackCaseStudyBlocks(project, locale) {
       markdown: secondaryMarkdown
     }
   ];
+}
+
+function getCaseStudyMdxMediaItems(mdxSource) {
+  const parsed = parseCaseStudyMdx(mdxSource);
+  const items = [];
+
+  parsed.sections.forEach((section) => {
+    if (section.wideImage?.src && !isMdxPlaceholder(section.wideImage)) {
+      items.push(normalizeMdxMediaItem(section.wideImage));
+    }
+
+    section.cardGroups.forEach((cards) => {
+      cards.forEach((card) => {
+        if (card.image) {
+          items.push(
+            normalizeMdxMediaItem({
+              src: card.image,
+              alt: card.alt ?? card.title ?? "",
+              width: card.width,
+              height: card.height
+            })
+          );
+        }
+      });
+    });
+  });
+
+  return items;
+}
+
+function normalizeMdxMediaItem(media) {
+  return {
+    src: media.src,
+    alt: media.alt ?? "",
+    width: parseMdxDimension(media.width),
+    height: parseMdxDimension(media.height)
+  };
+}
+
+function parseCaseStudyMdx(source) {
+  const lines = normalizeMdxComponentLines(source);
+  const parsed = {
+    hero: {},
+    sections: []
+  };
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const trimmed = lines[index].trim();
+
+    if (!trimmed) {
+      continue;
+    }
+
+    if (trimmed.startsWith("<CaseHero")) {
+      parsed.hero = parseMdxAttributes(trimmed);
+      continue;
+    }
+
+    if (trimmed.startsWith("<Section")) {
+      const attributes = parseMdxAttributes(trimmed);
+      const sectionLines = [];
+
+      index += 1;
+      while (index < lines.length && !lines[index].trim().startsWith("</Section>")) {
+        sectionLines.push(lines[index]);
+        index += 1;
+      }
+
+      parsed.sections.push(parseCaseStudyMdxSection(attributes, sectionLines));
+    }
+  }
+
+  return parsed;
+}
+
+function parseCaseStudyMdxSection(attributes, sectionLines) {
+  const section = {
+    title: attributes.title ?? "",
+    wideImage: null,
+    markdown: "",
+    cardGroups: []
+  };
+  const markdownLines = [];
+
+  for (let index = 0; index < sectionLines.length; index += 1) {
+    const line = sectionLines[index];
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith("<WideImage")) {
+      section.wideImage = parseMdxAttributes(trimmed);
+      continue;
+    }
+
+    if (trimmed.startsWith("<CardGroup")) {
+      const cardLines = [];
+
+      index += 1;
+      while (index < sectionLines.length && !sectionLines[index].trim().startsWith("</CardGroup>")) {
+        cardLines.push(sectionLines[index]);
+        index += 1;
+      }
+
+      section.cardGroups.push(parseCaseStudyMdxCards(cardLines));
+      continue;
+    }
+
+    markdownLines.push(line);
+  }
+
+  section.markdown = markdownLines.join("\n").trim();
+
+  return section;
+}
+
+function parseCaseStudyMdxCards(cardLines) {
+  return cardLines
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("<Card"))
+    .map(parseMdxAttributes);
+}
+
+function normalizeMdxComponentLines(source) {
+  const normalized = [];
+  let componentBuffer = [];
+
+  String(source ?? "")
+    .replace(/\r/g, "")
+    .split("\n")
+    .forEach((line) => {
+      const trimmed = line.trim();
+
+      if (!componentBuffer.length && /^<[A-Z][A-Za-z0-9]*/.test(trimmed) && !trimmed.includes(">")) {
+        componentBuffer.push(trimmed);
+        return;
+      }
+
+      if (componentBuffer.length) {
+        componentBuffer.push(trimmed);
+
+        if (trimmed.includes(">")) {
+          normalized.push(componentBuffer.join(" "));
+          componentBuffer = [];
+        }
+
+        return;
+      }
+
+      normalized.push(line);
+    });
+
+  if (componentBuffer.length) {
+    normalized.push(componentBuffer.join(" "));
+  }
+
+  return normalized;
+}
+
+function parseMdxAttributes(source) {
+  const attributes = {};
+  const attributePattern = /([A-Za-z][A-Za-z0-9-]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|\{([^}]*)\})/g;
+  let match = attributePattern.exec(source);
+
+  while (match) {
+    const [, name, doubleQuotedValue, singleQuotedValue, expressionValue] = match;
+    const rawValue = doubleQuotedValue ?? singleQuotedValue ?? expressionValue ?? "";
+    attributes[name] = parseMdxAttributeValue(rawValue, expressionValue !== undefined);
+    match = attributePattern.exec(source);
+  }
+
+  return attributes;
+}
+
+function parseMdxAttributeValue(value, isExpression) {
+  if (!isExpression) {
+    return value;
+  }
+
+  const trimmed = String(value).trim();
+
+  if (trimmed === "true") {
+    return true;
+  }
+
+  if (trimmed === "false") {
+    return false;
+  }
+
+  const numericValue = Number(trimmed);
+  return Number.isFinite(numericValue) ? numericValue : trimmed;
+}
+
+function isMdxPlaceholder(attributes) {
+  return attributes?.placeholder === true || attributes?.placeholder === "true";
+}
+
+function parseMdxDimension(value) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : 1;
 }
 
 function renderMarkdown(markdown) {
