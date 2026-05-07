@@ -2686,9 +2686,17 @@ function renderCaseStudyMdxCard(project, card, triggerKey) {
   const title = card.title ?? "";
   const text = card.text ?? "";
   const hasImage = Boolean(card.image);
+  const presentation = getMdxTokenClassSegment(card.presentation);
+  const cardClassName = [
+    "case-study-mdx-card",
+    hasImage ? "case-study-mdx-card--media" : "",
+    presentation ? `case-study-mdx-card--${presentation}` : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return `
-    <article class="case-study-mdx-card${hasImage ? " case-study-mdx-card--media" : ""}">
+    <article class="${cardClassName}">
       ${
         hasImage
           ? renderCaseStudyMdxMediaButton(
@@ -2699,7 +2707,8 @@ function renderCaseStudyMdxCard(project, card, triggerKey) {
                 width: card.width,
                 height: card.height,
                 previewWidth: card.previewWidth,
-                previewHeight: card.previewHeight
+                previewHeight: card.previewHeight,
+                presentation: card.presentation
               },
               triggerKey,
               {
@@ -2722,6 +2731,7 @@ function renderCaseStudyMdxMediaButton(project, media, triggerKey, { buttonClass
   const width = parseMdxDimension(media.width);
   const height = parseMdxDimension(media.height);
   const alt = media.alt ?? "";
+  const presentation = getMdxTokenClassSegment(media.presentation);
   const isLongPreview = height > VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD;
   const hasCustomPreviewHeight = media.previewHeight !== undefined;
   const previewWidth = parseMdxDimension(media.previewWidth ?? width);
@@ -2730,7 +2740,8 @@ function renderCaseStudyMdxMediaButton(project, media, triggerKey, { buttonClass
   const className = [
     buttonClassName,
     isLongPreview ? "case-study-mdx-media-button--long" : "",
-    hasPreviewCrop ? "case-study-mdx-media-button--preview-crop" : ""
+    hasPreviewCrop ? "case-study-mdx-media-button--preview-crop" : "",
+    presentation ? `case-study-mdx-media-button--${presentation}` : ""
   ]
     .filter(Boolean)
     .join(" ");
@@ -3405,6 +3416,13 @@ function isMdxPlaceholder(attributes) {
 function parseMdxDimension(value) {
   const numericValue = Number(value);
   return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : 1;
+}
+
+function getMdxTokenClassSegment(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "");
 }
 
 function renderMarkdown(markdown) {

@@ -1,3 +1,5 @@
+import tabmacCaseStudyEn from "../content/case-studies/tabmac.en.mdx?raw";
+import tabmacCaseStudyZh from "../content/case-studies/tabmac.zh.mdx?raw";
 import treeingCaseStudyEn from "../content/case-studies/treeing.en.mdx?raw";
 import treeingCaseStudyZh from "../content/case-studies/treeing.zh.mdx?raw";
 
@@ -94,6 +96,10 @@ export const projects = [
       ]
     },
     caseStudy: {
+      mdx: {
+        en: tabmacCaseStudyEn,
+        zh: tabmacCaseStudyZh
+      },
       blocks: {
         en: [
           {

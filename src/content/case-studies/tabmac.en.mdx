@@ -1,0 +1,184 @@
+<CaseHero
+  title="Tabmac"
+  subtitle="A subscription-based dining platform that uses multi item tiers quotas to unlock flexible dining experiences, then expands into business purchasing, venue booking, and lightweight checkout."
+/>
+
+<Section title="Why Dining Subscription Is More Than a Membership Benefit">
+<WideImage src="/images/tabmac/banner.png" alt="Tabmac product overview" width={1920} height={1080} />
+
+The complexity of a dining product rarely lives in a single screen. It comes from the gaps between discovery, benefit understanding, in-store redemption, and payment. Consumers want more diverse restaurant choices, but one-off dining rarely creates sustained exploration. Restaurants want stable demand and prepaid revenue, but they need a reason to believe joining the platform is more than another exposure channel. Businesses need to purchase, distribute, and track dining benefits at an organizational level.
+
+Tabmac's opportunity starts here: divide dining into item tiers, then give users different dining quotas through subscription plans. Users are not buying a one-time discount at a single restaurant. They are buying flexible dining capacity that can be used across a partner restaurant network. This shifts the subscription from "saving money" to "exploring restaurants with more freedom."
+
+On top of this model, Tabmac can expand horizontally. Checkout, Business, Venue, and other modules are not separate add-ons. They are business entry points built around the same subscription and fulfillment network. After joining Tabmac, restaurants can access not only consumer subscription demand, but also business purchasing, venue booking, payment, and tipping capabilities.
+
+So I did not frame Tabmac as only a mobile membership product. I framed it as a product system for moving dining quotas, restaurant supply, and multi-context fulfillment through the right workflows.
+
+</Section>
+
+<Section title="Putting Consumers, Businesses, and Restaurants into One Value Chain">
+Tabmac's business logic is built around multi-sided value.
+
+For consumers, the platform reduces discovery and choice cost. Item tiers organize restaurant supply into understandable value tiers. Subscription quotas let users combine different dining experiences across partner restaurants instead of comparing individual prices and discounts every time.
+
+For businesses, Tabmac turns the same dining quota model into benefits that can be purchased, distributed, and tracked. Companies can buy items or subscriptions in bulk, define recipients, and review usage without manual records or offline coordination.
+
+For restaurants, Tabmac offers more than exposure. It provides an ecosystem of demand entry points that can compound over time. Consumer subscription brings stable traffic. Business brings organizational purchasing. Venue brings private dining demand. Checkout and Redeem make in-store payment and benefit fulfillment lighter. Restaurants are motivated by the whole ecosystem, not a single feature.
+
+For the platform, the value grows as modules connect. More subscribers make the platform more attractive to restaurants. More restaurants make the subscription stronger. Business and Venue expand the demand contexts, while Checkout and Redeem convert that demand into fulfillable transactions.
+
+<CardGroup>
+  <Card title="Consumer Value" text="Explore partner restaurants more freely through tiers and quotas." />
+  <Card title="Business Value" text="Extend dining quotas from individual subscriptions into distributable and trackable benefits." />
+  <Card title="Restaurant Value" text="Access subscription, business, venue, and payment demand through one ecosystem." />
+  <Card title="Platform Value" text="Let each module expand restaurant supply and user demand for the others." />
+</CardGroup>
+</Section>
+
+<Section title="From Unclear Value to Broken Fulfillment">
+When mapping Tabmac's use cases, I grouped the problem into three questions: whether users can understand the value, whether businesses can manage the purchase, and whether restaurants can fulfill it smoothly.
+
+On the consumer side, the main issues are subscription value and freedom. If a dining subscription is presented only as discounts, users can get stuck comparing prices. Tabmac needed to show that different tiers map to different types of dining experiences, and that subscription quotas let users choose freely across the partner restaurant network instead of being locked into one store or fixed package.
+
+On the business side, the problem is purchase and distribution. When companies buy dining benefits, decision makers care about budget, headcount, distribution rules, and usage tracking. A consumer product usually does not include these management layers. If Tabmac only offered a checkout path without organizational control, the business use case would be weak.
+
+On the restaurant side, the problem is motivation and service workflow. If Tabmac only offered consumer subscription, restaurants might see it as another discount channel. To make restaurants more willing to join, the platform needed to show broader ecosystem value: stable subscription demand, business purchasing, Venue booking, Checkout payment, and Redeem fulfillment can all create different growth paths while keeping in-store fulfillment lightweight.
+
+These observations led me to define Tabmac's core product question: how might Tabmac use tiered subscription and quota logic to create flexible dining experiences, then let the business modules around it expand each other?
+
+<CardGroup>
+  <Card title="Subscription Value Is Not Obvious" text="Users need to understand tiers, quotas, and available restaurants, not only discount language." />
+  <Card title="Redemption Can Become Too Heavy" text="In-store users are unlikely to install an app or learn a complex flow just to use a benefit." />
+  <Card title="Business Purchasing Lacks Control" text="Budget, members, distribution, and usage records need one management model." />
+  <Card title="Restaurants Need More Incentive" text="The platform must prove that subscription, business, venue, and payment can grow together." />
+</CardGroup>
+</Section>
+
+<Section title="Core Hypothesis: Use Subscription to Connect Discovery, Redemption, and Fulfillment">
+Based on the early problem framing, I summarized Tabmac's product hypothesis:
+
+If Tabmac can use item tiers to create a clear dining value ladder, then use subscription quotas to let users spend flexibly across partner restaurants, subscription can become the demand foundation of the platform. On top of that, Business, Venue, Checkout, Redeem, and Tips can expand horizontally, letting consumers, businesses, and restaurants drive each other's growth inside one ecosystem.
+
+This hypothesis became five design principles: make tiers and quotas visible at entry; keep redemption and checkout lightweight; give businesses clear bulk purchase and distribution controls; show restaurants the value of joining the whole ecosystem; and unify the modules through one account, order, and fulfillment logic.
+
+<CardGroup>
+  <Card title="Visible Tiers" text="Users should understand Standard, Pro, Max, Ultra, and quota differences before reading detailed rules." />
+  <Card title="Low-friction Entry" text="Redemption and checkout should support lightweight access, especially for users without the full app." />
+  <Card title="Organizational Control" text="Business purchasing needs to cover purchase, distribution, teams, and usage tracking." />
+  <Card title="Restaurant Ecosystem" text="Restaurants should be able to use subscription, business, venue, payment, and other modules after joining." />
+  <Card title="Growth Loop" text="Each module should strengthen the subscription network and restaurant supply." />
+</CardGroup>
+</Section>
+
+<Section title="V1: Making the Consumer Loop Clear First">
+
+The first version of Tabmac did not start with backend complexity. It first validated the consumer loop: can users understand the subscription tiers, discover available restaurants, check their quotas, and complete redemption or payment before and after the visit?
+
+The main interface needed to turn dining subscription into concrete choices that could be browsed. Users should see restaurants, locations, tiers, benefits, and actions instead of an abstract membership. The map brings choices back into real geography, while the store page explains value and supports redemption.
+
+From an interaction perspective, I kept tier, remaining quota, and redemption entry points in the same decision path. Users first confirm what they can use, then move into restaurant details and redemption. On mobile, each page keeps one primary action so filtering, explanation, and payment do not compete on a small screen.
+
+The account page is not secondary in this system. Because Tabmac includes subscription quotas, business-distributed benefits, campaign rewards, and payment, users need one stable place to understand their plan, remaining quota, usage history, and next possible action.
+
+<CardGroup>
+  <Card title="Main" image="/images/tabmac/main.png" alt="Tabmac main screen" width={804} height={1748} presentation="phone" text="Make restaurants, tiers, and benefits browsable together so subscription value becomes concrete." />
+  <Card title="Map" image="/images/tabmac/map.png" alt="Tabmac map screen" width={804} height={1748} presentation="phone" text="Use location to turn benefits into real visit decisions." />
+  <Card title="Store" image="/images/tabmac/store.png" alt="Tabmac store screen" width={804} height={1748} presentation="phone" text="Centralize restaurant details, available items, and redemption entry points." />
+  <Card title="Account" image="/images/tabmac/account.png" alt="Tabmac account screen" width={804} height={1748} presentation="phone" text="Unify plans, quotas, rewards, and business-distributed benefits in one place." />
+</CardGroup>
+</Section>
+
+<Section title="Turning Business Purchasing into a Manageable Workflow">
+<WideImage src="/images/tabmac/business.png" alt="Tabmac Business dashboard" width={2048} height={1536} />
+
+Tabmac Business turns the quota logic from individual subscriptions into an organizational purchasing workflow.
+
+When a company buys dining benefits, the most complex part is not payment. It is what happens after purchase: how benefits are distributed, whether purchases recur, how members use them, and how admins review usage. I separated Bulk Purchase, Recurring Purchase, Distribution, and Teams into clear management tasks instead of compressing every setting into one checkout form. This means Business is not a new product detached from subscription, but an extension of Standard, Pro, Max, Ultra, and quota capabilities into team contexts.
+
+Admins can complete bulk or recurring purchase first, then decide recipients and team scope. This keeps purchase behavior and organization management separate enough to understand, while making later tracking easier. For restaurants, Business also expands demand from individual consumption to organizational budgets, making the Tabmac ecosystem more attractive to join.
+
+The experience is closer to a task-oriented admin tool than a marketing surface. Purchase, distribution, teams, and usage are separated into actions that can be completed independently, with clear status and next-step entry points.
+
+<CardGroup>
+  <Card title="Bulk Purchase" text="Support one-time item, subscription, or quota purchases for multiple members." />
+  <Card title="Recurring Purchase" text="Let dining benefits continue without restarting every order manually." />
+  <Card title="Distribution" text="Send purchased benefits by member, team, or rule." />
+  <Card title="Teams" text="Use organization structure to support budget, members, and usage records." />
+</CardGroup>
+</Section>
+
+<Section title="Turning Venue Booking from Back-and-forth Communication into Instant Judgment">
+<WideImage src="/images/tabmac/venue.png" alt="Tabmac Venue booking flow" width={2880} height={8667} previewHeight={2048} />
+
+The pain point of traditional venue booking is not that users do not know they want to book. It is that both sides have to keep communicating about capacity, date, minimum spend, menu, service fees, cancellation rules, and special requests. Every condition change can trigger a new quote and confirmation. Users cannot compare venues early, and restaurants spend time on low-certainty inquiries.
+
+Tabmac Venue borrows the structure of hotel booking: choose a venue, time, and party size, review capacity, rules, and pricing, then move toward confirmation. This lets users judge fit earlier instead of submitting a form and waiting for a response.
+
+Instant Quote is the key mechanism. Restaurants can use custom rules to influence pricing and availability, while users see actionable pricing before starting the conversation and can compare venue and time options earlier. This preserves restaurant control and removes much of the repeated confirmation that slows private dining booking.
+
+Interaction-wise, the Venue flow is split into consecutive steps: choose conditions, review constraints, receive a quote, and continue to confirmation. Users deal with one decision at a time, and restaurants receive requests that are closer to a bookable state.
+
+<CardGroup>
+  <Card title="Venue Discovery" text="Help users understand space, capacity, constraints, and use cases first." />
+  <Card title="Instant Quote" text="Move quote logic earlier so users can compare budget and options before negotiation." />
+  <Card title="Restaurant Control" text="Let restaurants manage quote and availability logic through configurable rules." />
+</CardGroup>
+</Section>
+
+<Section title="Making Checkout and Redemption Low-friction Entry Points">
+In an in-store context, users have little patience. If checkout, redemption, or tipping requires installing the full app, creating an account, or learning complex rules, it directly hurts completion and increases staff explanation cost.
+
+So Tabmac Checkout and Redeem were designed as lightweight entry points. With App Clips, users without the full app can still complete payment or redemption. This lowers first-use friction and lets one-time campaign users, business benefit users, and long-term subscribers share the same fulfillment path.
+
+Tips were treated as part of the payment system, not an afterthought. Restaurants can configure suggested tip behavior around U.S. dining expectations, while business-purchased items can include prepaid tips. This reduces uncertainty for employees using company benefits and keeps payment policy and service expectations in one flow.
+
+From an experience design perspective, Checkout and Redeem reduce branching decisions. Users first see the available benefit, then confirm amount, tip, and final state, instead of having the whole subscription model re-explained at the end of payment.
+
+<CardGroup>
+  <Card title="Checkout" image="/images/tabmac/checkout.png" alt="Tabmac Checkout" width={2048} height={1536} text="Use App Clips to help users pay without installing the full app." />
+  <Card title="Redeem" image="/images/tabmac/redeem.png" alt="Tabmac Redeem" width={2048} height={1536} text="Unify campaign rewards, business-distributed benefits, and subscription items in one redemption path." />
+  <Card title="Tips" image="/images/tabmac/tip.png" alt="Tabmac Tips" width={804} height={1748} previewHeight={600} text="Keep tip configuration, business policy, and checkout timing aligned." />
+</CardGroup>
+</Section>
+
+<Section title="From a Feature Set to a Dining Demand System">
+<WideImage src="/images/tabmac/connect.png" alt="Tabmac ecosystem connection diagram" width={2048} height={1152} />
+
+The final Tabmac design is not a set of independent features. It is an ecosystem for moving dining quotas and demand through discovery, purchase, distribution, fulfillment, and payment.
+
+The subscription side is the demand foundation. Item tiers use different quotas to support different dining tiers, letting users combine experiences across partner restaurants. Main, Map, Store, and Account make these tiers, quotas, and restaurant choices understandable and usable.
+
+The business side scales demand. Business turns dining benefits from individual consumption into an organizational procurement workflow, so admins can manage budget, members, and usage records over time. It also gives restaurants new demand from company benefits, team activities, and business dining contexts.
+
+The restaurant side supports fulfillment and conversion. Venue reduces booking communication cost. Checkout and Redeem lower the barrier for in-store payment and redemption. Tips place service expectations, policy, and payment into one flow. These modules let restaurants benefit from the full ecosystem after joining Tabmac, not only appear in a subscription list.
+
+When these modules connect, Tabmac's core logic becomes clear: subscription creates ongoing demand, and more restaurants make the subscription more valuable. Business and Venue scale demand, while Checkout and Redeem improve fulfillment. Better fulfillment makes restaurants more willing to join, richer supply makes users and businesses more willing to subscribe, and the ecosystem expands through its own modules.
+</Section>
+
+<Section title="What Tabmac Solves">
+Tabmac's design value can be understood from the consumer, business, restaurant, and platform perspectives.
+
+For consumers, Tabmac reduces the cost of understanding dining benefits and completing redemption. Item tiers organize dining experiences into clear tiers, while quotas let users combine choices across partner restaurants instead of repeatedly comparing rules and discounts.
+
+For businesses, Tabmac turns dining benefits into a manageable asset. Bulk purchase, recurring purchase, team distribution, and usage tracking let dining benefits enter an organizational procurement workflow instead of staying as one-off expensing or voucher distribution.
+
+For restaurants, Tabmac provides demand entry points that are easier to fulfill and more valuable to join. Subscription, business purchasing, venue booking, redemption, payment, and tips are designed around service workflows, creating multiple demand sources while reducing staff explanation and backend maintenance cost.
+
+For the platform, Tabmac's value is not only subscription revenue. It is the network that connects consumer demand, business budgets, and restaurant fulfillment capacity. Each module increases the reason to use another module.
+
+<CardGroup>
+  <Card title="Consumer" text="Use tiers and quotas to combine diverse restaurant experiences more freely." />
+  <Card title="Business" text="Bring dining benefits into a purchasable, distributable, and trackable organizational workflow." />
+  <Card title="Restaurant" text="Access subscription, business, venue, redemption, and payment demand through one entry point." />
+  <Card title="Platform" text="Let subscription, supply, business, and fulfillment modules drive one another's growth." />
+</CardGroup>
+</Section>
+
+<Section title="A Subscription Platform Has to Fulfill Its Value">
+Tabmac changed how I understand subscription product design. A subscription is not just a pricing bundle, and it is not solved by adding more membership benefits to a page. The difficult part is using tiers and quotas to create a value structure that feels clear enough for users, controllable enough for businesses, and valuable enough for restaurants to join.
+
+If viewed only from the consumer side, the problem looks like restaurant discovery and redemption. If viewed only from the business side, it becomes procurement and distribution tooling. If viewed only from the restaurant side, it becomes backend and payment efficiency. Tabmac's key insight is that all of these questions revolve around the same thing: how a subscription network can expand user choice, restaurant supply, and fulfillment capacity at the same time.
+
+In the end, I focused the design on how subscription becomes an ecosystem growth structure, rather than only optimizing individual screens. This made the product lesson clearer: product design is not only about making entry points understandable. It is about making each module strengthen the value of the others.
+
+</Section>

@@ -1115,6 +1115,15 @@ button.case-study-mdx-card__media-button * {
   margin: 0 auto;
 }
 
+.case-study-mdx-wide-image.case-study-mdx-media-button--phone {
+  width: min(100%, 380px);
+}
+
+.case-study-mdx-wide-image.case-study-mdx-media-button--phone .case-study-mdx-wide-image__frame {
+  border: 0.5px solid rgba(26, 26, 26, 0.34);
+  background: var(--bg);
+}
+
 .case-study-mdx-wide-image__frame,
 .case-study-mdx-card__media {
   width: 100%;
@@ -1283,6 +1292,11 @@ button.case-study-mdx-card__media-button * {
 
 .case-study-mdx-card--media .case-study-mdx-card__media-button {
   align-self: start;
+}
+
+.case-study-mdx-card--phone .case-study-mdx-card__media-button {
+  width: min(100%, 248px);
+  margin: 0 auto;
 }
 
 .case-study-mdx-card__media {
