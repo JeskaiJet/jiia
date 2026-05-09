@@ -1,162 +1,171 @@
 <CaseHero
   title="Treeing"
-  subtitle="A travel booking platform designed around repeat-guest relationships, helping Guests return to trusted Hosts and helping Hosts maintain repeat bookings with less operational cost."
+  subtitle="Helping travelers return to trusted hosts and helping hosts maintain repeat-guest relationships efficiently."
 />
 
 <Section title="Why Travel Booking Needs a Relationship Layer">
-<WideImage src="/images/treeing/banner.png" alt="Treeing product overview" width={3840} height={2160} />
+<WideImage src="/images/treeing/traditional.png" alt="Treeing product overview" width={3840} height={2160} />
 
-Traditional travel booking platforms usually start with inventory. Guests enter a destination, dates, and party size, then keep narrowing the results through price, ratings, location, and amenities. This model works for first-time exploration, but it is not always the best fit for repeat booking.
+**TL;DR: Traditional platforms focus on listing inventory, but overlook the long-term trust between travelers and hosts.**
 
-In real travel decisions, trust is often not built from zero. A Guest may remember a stay that worked well, a Host who communicated clearly, or a property managed by someone they already trust. But on most platforms, that trust rarely becomes a stable entry point. The Guest still has to search again next time, and the Host has no lightweight way to turn satisfied past guests into a durable customer group.
+Traditional travel booking platforms usually start with inventory. Travelers enter a destination, dates, and party size, then filter results by price, rating, location, and amenities. This model works for first-time exploration, but it is not the best fit for repeat booking once trust already exists.
 
-Treeing's product opportunity starts here: if the platform can structure the trust that already exists between Hosts and Returning Guests, travel booking can become more than a one-off search transaction. It can become a product system built around relationships, repeat booking, and operational efficiency.
+In real travel decisions, trust often does not start from zero. A traveler may remember a good stay, a host who communicated clearly, or another property managed by the same host. But on most platforms, this relationship cannot be saved as a stable entry point. Travelers have to search again, and hosts struggle to turn satisfied guests into a sustainable customer group.
+
+Treeing's opportunity starts here: structure the existing trust between hosts and returning travelers, so travel booking can move from one-off search transactions toward a product system built around relationships, repeat booking, and operational efficiency.
 </Section>
 
 <Section title="Turning Repeat-Guest Relationships into Shared Value">
-Treeing's business logic is built around value for three sides.
+Treeing's business logic is built around value for travelers, hosts, and the platform.
 
-For Guests, the platform reduces repeat decision-making cost. Instead of comparing unfamiliar listings from scratch every time, Guests can return to Hosts they already trust, browse new listings, check availability, and potentially access returning-guest benefits.
+For travelers, Treeing reduces repeated decision cost. Instead of comparing unfamiliar listings from scratch every time, users can return to trusted hosts, check new listings, availability, and potential returning-guest benefits.
 
-For Hosts, Treeing reduces the cost of repeat-guest operations. Many Hosts already have returning guests from different platforms or offline channels, but those relationships are often scattered across messages, email, social apps, and platform dashboards. Guest List turns these relationships into a manageable customer group that Hosts can maintain through invitations, dedicated visibility, and operational tools.
+For hosts, Treeing reduces the cost of repeat-guest operations. Many hosts already have past guests from different platforms or offline channels, but those relationships are scattered across messages, email, social apps, and platform dashboards. Guest List turns these guests into a manageable audience that hosts can maintain through invitations, dedicated visibility, and operational tools.
 
-For the platform, Treeing's value is not only listing inventory. It is the relationship network. The more stable the Guest-Host relationship becomes, the more the platform can move from one-time transactions toward retention and repeat booking.
+For the platform, Treeing's value is not only listing inventory. It is the relationship network. The more stable the traveler-host relationship becomes, the more the platform can move from one-time transactions toward repeat booking, retention, and long-term operations.
 
 <CardGroup>
-  <Card title="Guest Value" text="Return to trusted Hosts faster and reduce repeated search and comparison." />
-  <Card title="Host Value" text="Manage returning guests, increase repeat booking, and lower acquisition and maintenance cost." />
-  <Card title="Platform Value" text="Improve retention by turning relationships into a platform asset." />
+  <Card icon="suitcase-solid-full" title="Traveler Value" text="Return to trusted hosts quickly and reduce repeated search." />
+  <Card icon="house-solid-full" title="Host Value" text="Manage repeat guests in one place and increase repeat booking." />
+  <Card icon="globe-solid-full" title="Platform Value" text="Turn relationships into a platform asset and improve retention." />
 </CardGroup>
 </Section>
 
 <Section title="From Search Pressure to Operational Burden">
-When mapping the Guest and Host experience, I separated the problem into two types: one that happens before booking, and one that appears during long-term operations.
+**TL;DR: Complex traveler search and high host maintenance cost became the core design problem.**
 
-On the Guest side, the main issues are search pressure and trust transfer. Travel booking pages often ask users to process destination, price, dates, party size, map, amenities, and reviews at the same time. More information does not always make the decision easier. On mobile, desktop-style filtering is compressed into a small screen, which makes users move back and forth between multiple conditions.
+When mapping traveler and host scenarios, I separated the problem into two types: one before booking, and one during long-term operations.
 
-On the Host side, the problem is relationship management and maintenance cost. Multi-listing Hosts need to manage pricing, calendars, availability, and booking sync across different contexts. If Treeing simply added another dashboard, Host adoption cost would be high. To make Treeing worth using, the product needed to reduce duplicated work instead of creating another layer of maintenance.
+On the traveler side, the core problem is search pressure and trust transfer. Travel booking pages often ask users to process destination, price, dates, party size, map, amenities, and reviews at the same time. More information does not always make the decision easier. On mobile, desktop-style filtering is compressed into a small screen, making users repeatedly confirm multiple conditions.
 
-These observations led me to define Treeing's core product question: how might Treeing reduce the Guest's trust decision cost while also reducing the Host's repeat-booking operational cost?
+On the host side, the core problem is relationship management and maintenance cost. Multi-listing hosts need to manage pricing, calendars, availability, and booking sync frequently. If Treeing simply added another dashboard, adoption cost would be high. The platform needed to reduce repeated maintenance instead of creating more work.
+
+These observations led me to define Treeing's core product question: how might Treeing reduce the traveler's trust decision cost while also reducing the host's repeat-booking operational cost?
 
 <CardGroup>
-  <Card title="Guests Search from Scratch" text="Trusted Hosts rarely become a stable starting point for the next booking." />
-  <Card title="Trust Cannot Be Saved" text="Guests remember the experience, but the platform does not turn that relationship into a return path." />
-  <Card title="Returning Guests Are Scattered" text="Regular guests may come from different platforms or offline channels, without one shared management model." />
-  <Card title="Operations Are Costly" text="Multi-listing, multi-date, and multi-platform pricing and availability require repeated adjustments." />
+  <Card icon="magnifying-glass-solid-full" title="Repeated Traveler Search" text="Trusted hosts rarely become the next booking entry point." />
+  <Card icon="people-arrows-solid-full" title="Trust Cannot Be Saved" text="Users remember the experience, but the platform does not create a return path." />
+  <Card icon="person-falling-solid-full" title="Scattered Host Guests" text="Repeat guests come from many channels without one management model." />
+  <Card icon="arrow-trend-up-solid-full" title="High Maintenance Cost" text="Pricing, dates, and availability need to be adjusted repeatedly across places." />
 </CardGroup>
 </Section>
 
 <Section title="Core Hypothesis: Make Relationships the Booking Entry Point">
 Based on the early problem framing, I summarized Treeing's product hypothesis:
 
-If Treeing can turn the trust relationship between Hosts and returning guests into a discoverable, manageable, and bookable product structure, Guests can complete trusted bookings faster, while Hosts can maintain repeat-guest relationships with less effort.
+If Treeing can turn the trust between hosts and repeat guests into a discoverable, manageable, and bookable product structure, travelers can complete trusted bookings faster, while hosts can maintain repeat-guest relationships with less effort.
 
-This hypothesis became five design principles: organize the experience around Hosts, Guests, and trust relationships; avoid asking Hosts to abandon existing channels; make Host tools clarify status and speed up maintenance; let each mobile step handle one key decision; and make Host reputation, activity, and relationship entry points visible to Guests.
+This hypothesis became three design principles: 1. The experience should be organized around trust relationships. 2. Hosts should not have to abandon existing channels to adopt Treeing. 3. Operational tools should make status and actions clearer.
 
 <CardGroup>
-  <Card title="Relationship-first" text="Organize the experience around people and trust relationships, not only listing grids." />
-  <Card title="Low Adoption Cost" text="Hosts should not have to abandon existing channels to use Treeing." />
-  <Card title="Operational Clarity" text="Host tools should make status easier to understand and maintenance easier to complete." />
-  <Card title="Focused Mobile Flow" text="Each mobile step should handle one key decision." />
-  <Card title="Visible Trust" text="Host reputation, activity, and relationship entry points should be visible to Guests." />
+  <Card icon="users-solid-full" title="Relationship-first" text="Design around trust relationships, not listing grids." />
+  <Card icon="door-open-solid-full" title="Low Adoption Cost" text="Hosts can use Treeing without abandoning existing channels." />
+  <Card icon="calendar-check-solid-full" title="Operational Clarity" text="Hosts understand status quickly and complete maintenance." />
 </CardGroup>
 </Section>
 
 <Section title="V1: Validating Whether Repeat-Guest Relationships Can Become a Booking Entry Point">
-<WideImage src="/images/treeing/guest_list_invitation.png" alt="Treeing Guest List invitation flow" width={2880} height={2048} />
 
-The first version of Treeing did not try to cover the full scope of a travel booking marketplace. V1 focused on a more specific question: when a Guest and a Host already have trust, can the platform turn that relationship into a shorter and more natural booking path?
+**TL;DR: V1 focused on whether repeat-guest relationships could shorten the booking path and reduce traveler search pressure.**
+
+The first version of Treeing did not try to cover a full travel booking platform. It tested a more specific question first: when trust already exists between a traveler and a host, can the platform turn that relationship into a shorter and more natural booking path?
 
 The V1 design priorities centered on three areas.
 
-First, Guests needed an entry point back to trusted Hosts. My Host and Host Page let users continue browsing around people they already trust instead of starting from generic search.
+- Travelers needed an entry point back to trusted hosts. My Hosts and Host Page let users continue browsing around people they already trust instead of starting from generic search.
 
-Second, Hosts needed a basic model for managing returning guests. Guest List organizes scattered guest relationships into a customer group that can be maintained inside the platform, while the invitation flow explains the value of joining the relationship network.
+- Hosts needed a basic model for managing repeat guests. Guest List organizes scattered relationships into a maintainable audience inside the platform, while the invitation flow explains the value of joining.
 
-Third, the Host side had to stay lightweight. Dashboard, Listing Editing, and calendar-related tools needed to support daily operations without turning Treeing into another complicated backend.
+- The host side had to stay lightweight. Dashboard, Listing Editing, and calendar-related tools support daily operations without turning Treeing into another complex backend.
 </Section>
 
-<Section title="Reducing Guest Search Pressure">
-On the Guest side, I focused on search pressure. Traditional search asks users to define destination, dates, budget, room type, and preferences upfront, but many travel decisions do not start that way. Users may simply want to see promising options first, then narrow the decision gradually.
+<Section title="Reducing Traveler Search Pressure">
+On the traveler side, I focused on search pressure. Traditional search asks users to define destination, dates, budget, room type, and preferences upfront, but many travel decisions do not start that way. Users may simply want to see suitable options first, then narrow the range gradually.
 
 Spotlight was designed as a lightweight recommendation queue. It does not require users to complete a full set of filters first. Instead, users express preferences through browsing and swiping. Each interaction is both exploration and feedback.
 
-Mobile Search uses a step-by-step flow instead of compressing a desktop search bar into a phone layout. Destination, dates, and party size are split into separate pages or modal layers, so users handle one question at a time. This makes the search flow clearer on small screens and reduces mistaken selections and repeated confirmation.
+Mobile Search uses a step-by-step flow instead of compressing a desktop search bar into a phone layout. Destination, dates, and party size are split into separate pages or modal layers, so users handle one question at a time. This makes small-screen search clearer and reduces mistaken selections and repeated confirmation.
 
 <CardGroup>
-  <Card title="Spotlight" image="/images/treeing/spotlight.png" alt="Spotlight recommendation queue" width={2880} height={2086} text="Use a recommendation queue to reduce the pressure of completing filters upfront." />
-  <Card title="Mobile Search" image="/images/treeing/mobile_search.png" alt="Mobile search flow" width={2048} height={1536} text="Split destination, dates, and party size into step-by-step decisions." />
-  <Card title="Mobile Listing" image="/images/treeing/mobile_listing.png" alt="Mobile listing page" width={804} height={1748} previewHeight={600} text="Keep listing information, pricing, and the primary action clear on small screens." />
+  <Card title="Spotlight" image="/images/treeing/spotlight.png" alt="Spotlight recommendation queue" width={2880} height={2086} text="Use a recommendation queue to reduce early filtering pressure." />
+  <Card title="Mobile Search" image="/images/treeing/mobile_search.png" alt="Mobile search flow" width={2048} height={1536} text="Step-by-step decisions: destination, dates, and party size." />
+  <Card title="Mobile Listing" image="/images/treeing/mobile_listing.png" alt="Mobile listing page" width={804} height={1748} previewHeight={600} text="Keep listing information, pricing, and action entry clear on small screens." />
 </CardGroup>
 </Section>
 
 <Section title="Productizing Repeat-Guest Relationships">
 Treeing's core is not Guest List as a single feature. It is the relationship layer built around it.
 
-For Hosts, Guest List is a relationship management model. It turns returning guests from scattered contacts across channels into a manageable customer group, so Hosts can maintain these relationships instead of reacquiring the same guests every time.
+For hosts, Guest List is a relationship management model. It turns repeat guests scattered across channels into a manageable audience, so hosts can maintain relationships instead of reacquiring guests every time.
 
-For Guests, the relationship needs to become visible after joining Guest List. My Host provides a long-term entry point for returning to trusted Hosts. Host Page expands the Host from a person behind a single listing into a destination that Guests can follow, understand, and revisit.
+For travelers, the relationship needs to become visible after joining Guest List. The My Hosts area provides a long-term entry point for returning to trusted hosts. Host Page elevates the host from the operator behind a listing into a destination that can be followed, understood, and revisited.
 
-The invitation flow is important here. Users are not simply asked to join a list. They first see the value of joining Guest List: easier return visits to trusted Hosts, potential access to better prices or dedicated content, and less search cost for the next booking.
+The invitation flow is important here. Users are not directly asked to join a list. They first see the value of joining Guest List: easier return visits to trusted hosts, potential access to better prices or dedicated content, and less search cost for the next booking.
 
 <CardGroup>
-  <Card title="Guest List" image="/images/treeing/guest_list.png" alt="Guest List management" width={2880} height={2048} text="Turn scattered returning-guest contacts into a manageable customer group." />
-  <Card title="Invitation" image="/images/treeing/guest_list_invitation.png" alt="Guest List invitation" width={2880} height={2048} text="Help Guests understand the relationship value before joining." />
-  <Card title="Host Page" image="/images/treeing/host_page.png" alt="Host Page" width={2880} height={5002} text="Extend trust from an individual listing page to the Host level." />
-  <Card title="My Host" image="/images/treeing/my_host.png" alt="My Host" width={1440} height={1024} text="Make trusted Hosts easy to revisit instead of forcing users to search again." />
+  <Card title="Guest List" image="/images/treeing/guest_list.png" alt="Guest List management" width={2880} height={2048} text="Turn repeat-guest relationships into a manageable audience." />
+  <Card title="Invitation" image="/images/treeing/guest_list_invitation.png" alt="Guest List invitation" width={2880} height={2048} text="Show the joining value first, then guide the action." />
+  <Card title="Host Page" image="/images/treeing/host_page.png" alt="Host Page" width={2880} height={5002} text="Elevate the host into a revisit-worthy destination." />
+  <Card title="My Hosts" image="/images/treeing/my_host.png" alt="My Hosts" width={1440} height={1024} text="Make trusted hosts and their listings easy to access." />
 </CardGroup>
 </Section>
 
 <Section title="Reducing Host Operational Cost">
-If Treeing improved only the Guest experience without reducing Host maintenance cost, the platform would be difficult to sustain. Whether Hosts continue using Treeing depends on how well it fits into their existing operational workflow.
+If Treeing improved only the traveler experience without reducing host maintenance cost, the platform would be difficult to sustain. Whether hosts continue using Treeing depends on how well it fits into their existing operational workflow.
 
-Host Dashboard was designed as a daily workspace, not just a data display page. Key business signals, booking status, and schedule information need to be visible as soon as the Host enters the page. When Hosts need to plan further, the calendar can expand into a more complete operational view.
+Host Dashboard was designed as a daily workspace, not just a data display page. Key business signals, booking status, and schedule information are visible as soon as hosts enter the page. When hosts need to plan further, the calendar can expand into a more complete operational view.
 
-Listing Editing uses a direct-editing approach closer to the Guest view. Hosts do not need to update content inside abstract backend forms while guessing how the final page will look. Instead, they edit within a structure that is close to the final listing page, reducing the mental distance between settings and presentation.
+Listing Editing uses a direct-editing approach close to the traveler view. Hosts do not need to update content inside abstract backend forms while guessing how the final page will look. Instead, they edit inside a structure close to the final page, reducing the mental distance between setup and outcome.
 
-Batch Set and Calendar Connect address multi-listing and multi-platform operations. Batch Set turns repeated price and availability adjustments into batch rules. Calendar Connect lowers adoption cost by syncing with external platforms. Treeing's goal is not to make Hosts abandon existing channels, but to become an easier relationship layer for repeat booking.
+Batch Set and Calendar Connect address multi-listing and multi-platform operations. Batch Set turns repeated price and availability adjustments into batch rules. Calendar Connect lowers adoption cost by syncing with external platforms. Treeing's goal is not to ask hosts to abandon existing channels, but to become an easier relationship layer for repeat booking.
 
 <CardGroup>
-  <Card title="Dashboard" image="/images/treeing/host_dashboard.png" alt="Host Dashboard" width={2880} height={2048} text="Make business signals, booking status, and schedule information visible on entry." />
-  <Card title="Listing Editing" image="/images/treeing/host_listing.png" alt="Listing Editing" width={2880} height={10327} text="Let Hosts edit listings inside a structure closer to the Guest-facing page." />
-  <Card title="Batch Set" image="/images/treeing/batch_set.png" alt="Batch Set" width={2048} height={1536} text="Turn repeated price and availability updates into batch rules." />
-  <Card title="Calendar Connect" image="/images/treeing/calendar_connect.png" alt="Calendar Connect" width={2048} height={1536} text="Lower adoption cost by syncing with external platforms." />
+  <Card title="Dashboard" image="/images/treeing/host_dashboard.png" alt="Host Dashboard" width={2880} height={2048} text="Make key information visible at a glance." />
+  <Card title="Listing Editing" image="/images/treeing/host_listing.png" alt="Listing Editing" width={2880} height={10327} text="Let hosts edit listings inside a page close to the final presentation." />
+  <Card title="Batch Set" image="/images/treeing/batch_set.png" alt="Batch Set" width={2048} height={1536} text="Batch-adjust pricing and availability." />
+  <Card title="Calendar Connect" image="/images/treeing/calendar_connect.png" alt="Calendar Connect" width={2048} height={1536} text="Sync external calendars to reduce maintenance cost." />
 </CardGroup>
 </Section>
 
 <Section title="From a Feature Set to a Relationship-based Booking System">
-<WideImage src="/images/treeing/main_page.png" alt="Treeing web main page" width={2880} height={2048} />
+<WideImage src="/images/treeing/platform.png" alt="Treeing web main page" width={2880} height={2048} />
+
+**TL;DR: Features are connected through the relationship chain, forming a repeatable and operationally sustainable system.**
 
 The final Treeing design is not a collection of separate features. It is a product system that operates around relationships.
 
-The Guest side supports discovery and return visits. Spotlight reduces early exploration pressure, Mobile Search clarifies mobile decision-making, and My Host and Host Page turn trusted Hosts into returnable entry points.
+The traveler side supports discovery and return visits. Spotlight reduces early exploration pressure, Mobile Search clarifies mobile decision-making, and My Hosts and Host Page turn trusted hosts into returnable entry points.
 
-The Host side supports relationship management and operational maintenance. Guest List manages returning-guest relationships. Dashboard provides a daily operating view. Listing Editing reduces the effort of understanding edits. Batch Set and Calendar Connect handle multi-listing and multi-platform maintenance.
+The host side supports relationship management and operational maintenance. Guest List manages repeat-guest relationships. Dashboard provides a daily operating view. Listing Editing reduces editing comprehension cost. Batch Set and Calendar Connect handle multi-listing and multi-platform maintenance.
 
-When these features connect, Treeing's core logic becomes clear: Guests can return to trusted Hosts more easily, Hosts can maintain returning-guest relationships with less effort, and the platform can move from one-time transactions toward long-term repeat booking.
+When these features connect, Treeing's core logic becomes clear: travelers can return to trusted hosts more easily, hosts can maintain repeat-guest relationships with less effort, and the platform can move from one-time transactions toward long-term repeat booking.
 </Section>
 
 <Section title="What Treeing Solves">
-Treeing's design value can be understood from the Guest, Host, and platform perspectives.
+Treeing's design value can be understood from the traveler, host, and platform perspectives.
 
-For Guests, Treeing reduces the cost of starting every trip from zero. Through My Host, Host Page, and Spotlight, users can move between trusted relationships and lightweight exploration instead of being forced into complex filtering upfront.
+For travelers, Treeing reduces the cost of starting every trip from zero. Through My Hosts, Host Page, and Spotlight, users can move between trusted relationships and lightweight exploration instead of being forced into complex filtering upfront.
 
-For Hosts, Treeing turns returning-guest relationships into a manageable asset. Guest List helps Hosts maintain long-term customer groups. Batch Set and Calendar Connect reduce multi-listing and multi-platform maintenance cost. Listing Editing makes listing updates closer to the final presentation.
+For hosts, Treeing turns repeat-guest relationships into a manageable asset. Guest List helps hosts maintain long-term audiences. Batch Set and Calendar Connect reduce multi-listing and multi-platform maintenance cost. Listing Editing makes listing updates closer to the final presentation.
 
-For the platform, Treeing extends value from listing inventory to the relationship network. The platform does not only complete a booking. It helps Hosts and Guests build connections that can be revisited, repeated, and maintained over time.
+For the platform, Treeing extends value from listing inventory to the relationship network. The platform does not only complete a booking. It helps hosts and travelers build connections that can be revisited, repeated, and maintained over time.
 
 <CardGroup>
-  <Card title="Guest" text="Return to trusted Hosts faster and reduce the cost of searching from scratch." />
-  <Card title="Host" text="Maintain returning-guest relationships and multi-listing operations with less cost." />
-  <Card title="Platform" text="Move from one-time transactions toward relationship-driven repeat booking." />
+  <Card icon="suitcase-solid-full" title="Traveler" text="Reduce repeated search cost and create a repeat-booking path." />
+  <Card icon="house-solid-full" title="Host" text="Lower multi-listing and multi-platform maintenance cost, and provide a place to manage repeat guests." />
+  <Card icon="globe-solid-full" title="Platform" text="Move from one-time transactions toward relationship-driven repeat booking." />
 </CardGroup>
 </Section>
 
 <Section title="Travel Platforms Are Not Only Search">
+**TL;DR: The design focus is how relationships become booking entry points, not single-screen optimization.**
+
 Treeing changed how I understand the design focus of travel booking products. At first, the project looked like a listing marketplace, but the real complexity was not showing more listings. It was deciding what the platform should build long-term value around.
 
-If viewed only from the Guest side, the problem looks like search experience. If viewed only from the Host side, it becomes backend efficiency. Treeing's key insight is that these two problems are two ends of the same system. Guests need a more trusted return path, and Hosts need lower-cost relationship maintenance tools. Only when both sides work together can repeat-guest relationships become platform value.
+If viewed only from the traveler side, the problem looks like a search experience issue. If viewed only from the host side, it becomes a backend efficiency issue. Treeing's key insight is that these two problems are two ends of the same system.
 
-In the end, I focused the design on how relationships can become a booking entry point, rather than only optimizing individual screens. This also made the product lesson clearer: product design is not just about making a flow smoother. It is about finding the point where business model, user behavior, and operational efficiency can form a closed loop.
+Travelers need a more trusted return path, and hosts need lower-cost relationship maintenance tools. Only when both sides work together can repeat-guest relationships become platform value.
+
+In the end, I focused the design on how relationships can become a booking entry point, rather than only optimizing individual pages. This also made the product lesson clearer: product design is not just about making a flow smoother. It is about finding the point where business model, user behavior, and operational efficiency can form a closed loop.
 
 </Section>

@@ -1,161 +1,171 @@
 <CaseHero
   title="Treeing"
-  subtitle="围绕熟客关系设计的旅行预订平台，让 Guest 回到可信 Host，让 Host 更低成本地维护复购。"
+  subtitle="让用户回到可信房东，帮助房东高效维护熟客关系。"
 />
 
 <Section title="为什么旅行预订需要一层关系？">
-<WideImage src="/images/treeing/banner.png" alt="Treeing product overview" width={3840} height={2160} />
+<WideImage src="/images/treeing/traditional.png" alt="Treeing product overview" width={3840} height={2160} />
 
-传统旅行预订平台通常从房源库存出发：用户输入目的地、日期和人数，再通过价格、评分、位置和设施不断筛选。这种模式适合第一次探索，但不一定适合复购场景。
+**TL;DR：传统平台只关注房源列表，忽略旅客与房东的长期信任关系。**
 
-在真实旅行决策中，信任往往不是从零建立的。Guest 可能记得某次入住体验很好，记得某个 Host 沟通顺畅，也可能希望再次住进熟悉的房源或同一位 Host 管理的其他房源。但在大多数平台里，这种信任关系很难被保存成一个稳定入口。Guest 下一次预订时，仍然需要重新搜索；Host 也很难把过去满意的客人沉淀成可持续经营的客群。
+传统旅行预订平台通常从房源库存出发。旅客输入目的地、日期和人数，再通过价格、评分、位置和设施筛选结果。这套模式适合第一次探索，但不适合已经建立过信任的复购场景。
 
-Treeing 的产品机会来自这里：如果平台能把 Host 与 Returning Guest 之间已经存在的信任关系结构化，旅行预订就不只是一次性的搜索交易，而可以成为一套围绕关系、复购和运营效率展开的产品系统。
+在真实旅行决策中，信任往往不是从零开始。旅客可能记得某次入住体验、某位沟通顺畅的房东，或希望再次预订同一位房东管理的其他房源。但在多数平台里，这层关系无法被保存成稳定入口。旅客需要重新搜索，房东也难以把满意客人沉淀成可持续经营的客群。
+
+Treeing 的机会来自这里：把房东与回访旅客之间已有的信任关系结构化，让旅行预订从一次性搜索交易，转向围绕关系、复购和运营效率展开的产品系统。
 </Section>
 
 <Section title="把熟客关系变成三方都能受益的结构">
-Treeing 的商业逻辑建立在三方价值之上。
+Treeing 的商业逻辑建立在旅客、房东和平台三方价值之上。
 
-对 Guest 来说，平台降低的是重复决策成本。用户不需要每次旅行都重新筛选陌生房源，而是可以回到已经建立过信任的 Host，查看对方的新房源、可订时间和可能的熟客权益。
+对旅客来说，Treeing 降低重复决策成本。用户不必每次旅行都重新筛选陌生房源，而是可以回到可信房东，查看新房源、可订时间和熟客权益。
 
-对 Host 来说，Treeing 降低的是复购经营成本。很多 Host 已经有来自不同平台或线下渠道的老客人，但这些关系通常散落在短信、邮件、社交软件或其他平台后台里。Guest List 让 Host 可以把熟客整理成可管理的客群，并通过邀请、专属展示和运营工具持续维护。
+对房东来说，Treeing 降低复购经营成本。很多房东已经有来自不同平台或线下渠道的老客人，但关系散落在短信、邮件、社交软件和平台后台里。Guest List 把这些熟客整理成可管理客群，并通过邀请、专属展示和运营工具持续维护。
 
-对平台来说，Treeing 的价值不只来自房源库存，而来自关系网络。Guest 与 Host 的关系越稳定，平台越有机会从一次性交易转向复购、留存和长期运营。
+对平台来说，Treeing 的价值不只来自房源库存，而来自关系网络。旅客与房东的关系越稳定，平台越有机会从一次性交易转向复购、留存和长期运营。
 
 <CardGroup>
-  <Card title="Guest Value" text="更快回到可信 Host，减少重复搜索和比较。" />
-  <Card title="Host Value" text="管理熟客、提高复购，降低获客与维护成本。" />
-  <Card title="Platform Value" text="提升留存，让关系成为平台资产。" />
+  <Card icon="suitcase-solid-full" title="旅客价值" text="快速回到可信房东，减少重复搜索。" />
+  <Card icon="house-solid-full" title="房东价值" text="统一管理熟客，提高复购率。" />
+  <Card icon="globe-solid-full" title="平台价值" text="关系成为平台资产，提升留存。" />
 </CardGroup>
 </Section>
 
 <Section title="从搜索压力到运营负担">
-在梳理 Guest 与 Host 的使用场景时，我把问题分成两类：一类发生在预订前，另一类发生在长期运营中。
+**TL;DR：旅客搜索复杂、房东维护成本高，是设计优化的核心问题。**
 
-Guest 侧的问题主要是搜索压力和信任迁移。旅行预订页面通常同时要求用户处理目的地、价格、日期、人数、地图、设施和评价。信息足够多，但决策并不一定更轻松。尤其在移动端，桌面式筛选逻辑被压缩到小屏幕后，用户很容易在多个条件之间来回确认。
+在梳理旅客与房东的使用场景时，我把问题分成两类：一类发生在预订前，另一类发生在长期运营中。
 
-Host 侧的问题则是关系管理和维护成本。多房源 Host 需要频繁处理价格、日历、可订状态和预订同步。如果 Treeing 只是增加一个新的后台，Host 的接入成本会很高。要让 Host 愿意使用，平台必须减少额外维护，而不是创造新的重复劳动。
+旅客侧的核心问题是搜索压力和信任迁移。旅行预订页面通常要求用户同时处理目的地、价格、日期、人数、地图、设施和评价。信息越多，决策不一定越轻松。到了移动端，桌面式筛选被压缩到小屏幕，用户更容易在多个条件之间反复确认。
 
-这些观察让我把 Treeing 的核心问题定义为：如何同时降低 Guest 的信任决策成本，以及 Host 的复购运营成本？
+房东侧的核心问题是关系管理和维护成本。多房源房东需要频繁处理价格、日历、可订状态和预订同步。如果 Treeing 只是增加一个新的后台，接入成本会很高。平台必须减少重复维护，而不是创造新的工作量。
+
+这些观察让我把 Treeing 的核心问题定义为：如何同时降低旅客的信任决策成本，以及房东的复购运营成本？
 
 <CardGroup>
-  <Card title="Guest 每次都要重新搜索" text="信任过的 Host 很难成为下一次预订的稳定入口。" />
-  <Card title="信任关系无法保存" text="用户记得体验，但平台没有把关系转化成可回访路径。" />
-  <Card title="Host 熟客分散" text="常客可能来自不同平台或线下渠道，缺少统一管理方式。" />
-  <Card title="运营维护成本高" text="多房源、多日期、多平台价格与可订状态需要重复调整。" />
+  <Card icon="magnifying-glass-solid-full" title="旅客搜索重复" text="信任过的房东很难成为下一次预订入口。" />
+  <Card icon="people-arrows-solid-full" title="信任关系无法保存" text="用户记得体验，平台却没有形成可回访路径。" />
+  <Card icon="person-falling-solid-full" title="房东熟客分散" text="常客来自多渠道，缺少统一管理方式。" />
+  <Card icon="arrow-trend-up-solid-full" title="运营维护成本高" text="价格、日期和可订状态需要在多处重复调整。" />
 </CardGroup>
 </Section>
 
 <Section title="核心假设：让关系成为预订入口">
 基于前期问题梳理，我把 Treeing 的产品假设总结为：
 
-如果 Treeing 能把 Host 与熟客之间的信任关系变成可发现、可管理、可预订的产品结构，那么 Guest 可以更快完成可信预订，Host 也能用更低成本维护复购关系。
+如果 Treeing 能把房东与熟客之间的信任关系变成可发现、可管理、可预订的产品结构，那么旅客可以更快完成可信预订，房东也能用更低成本维护复购关系。
 
-这个假设进一步转化成五个设计原则：优先围绕 Host、Guest 和信任关系组织体验；不要求 Host 为了使用 Treeing 放弃已有渠道；Host 工具必须帮助用户更快理解状态、完成维护；移动端每一步只处理一个关键决策；把 Host 的信誉、活动和关系入口放到 Guest 可以感知的位置。
+这个假设进一步转化成三个设计原则：1.体验要围绕信任关系展开 2.房东不应为了接入 Treeing 放弃已有渠道。 3.运营工具要让状态和操作更清楚
 
 <CardGroup>
-  <Card title="Relationship-first" text="优先围绕人和信任关系组织体验，而不是只围绕房源列表。" />
-  <Card title="Low adoption cost" text="Host 不应该为了使用 Treeing 放弃已有渠道。" />
-  <Card title="Operational clarity" text="Host 工具必须帮助用户更快理解状态、完成维护。" />
-  <Card title="Focused mobile flow" text="移动端每一步只处理一个关键决策。" />
-  <Card title="Visible trust" text="把 Host 的信誉、活动和关系入口放到 Guest 可以感知的位置。" />
+  <Card icon="users-solid-full" title="关系优先" text="体验围绕信任关系，而非房源列表。" />
+  <Card icon="door-open-solid-full" title="低采用成本" text="房东无需放弃已有渠道即可使用。" />
+  <Card icon="calendar-check-solid-full" title="操作清晰度" text="房东快速理解状态，完成维护。" />
 </CardGroup>
 </Section>
 
 <Section title="V1：先验证熟客关系是否能成为预订入口">
-<WideImage src="/images/treeing/guest_list_invitation.png" alt="Treeing Guest List invitation flow" width={2880} height={2048} />
 
-Treeing 的第一版没有试图一次性覆盖完整旅行预订平台的全部能力。V1 的重点是验证一个更具体的问题：当 Guest 与 Host 之间已经存在信任关系时，平台能否把这层关系转化为更短、更自然的预订路径？
+**TL;DR：V1 聚焦验证熟客关系是否能缩短预订路径，减少旅客搜索压力。**
+
+Treeing 的第一版没有试图覆盖完整旅行预订平台，而是先验证一个更具体的问题：当旅客与房东之间已经存在信任关系时，平台能否把这层关系转化为更短、更自然的预订路径？
 
 因此，V1 的设计优先级集中在三件事上。
 
-第一，Guest 需要一个能回到可信 Host 的入口。My Host 和 Host Page 让用户不必从通用搜索重新开始，而是可以围绕自己已经信任的人继续浏览。
+- 旅客需要一个回到可信房东的入口。My Hosts 和 Host Page 让用户不必从通用搜索重新开始，而是围绕已经信任的人继续浏览。
 
-第二，Host 需要一个能管理熟客的基础模型。Guest List 把分散的常客关系整理成平台内可维护的客群，并通过 invitation 流程解释加入关系网络的价值。
+- 房东需要一个管理熟客的基础模型。Guest List 把分散关系整理成平台内可维护客群，并通过 invitation 流程解释加入价值。
 
-第三，Host 端必须足够轻量。Dashboard、Listing Editing 和 Calendar 相关工具需要支持日常运营，但不能让 Treeing 变成另一个复杂后台。
+- 房东端必须足够轻量。Dashboard、Listing Editing 和 Calendar 相关工具支持日常运营，但不把 Treeing 变成另一个复杂后台。
+
 </Section>
 
-<Section title="降低 Guest 的搜索压力">
-在 Guest 端，我重点处理的是搜索压力。传统搜索要求用户在一开始就明确目的地、日期、预算、房型和偏好，但很多旅行决策并不是这样发生的。用户可能只是想看看有什么合适的选择，再逐渐收窄范围。
+<Section title="降低旅客的搜索压力">
+在旅客端，我重点处理搜索压力。传统搜索要求用户一开始就明确目的地、日期、预算、房型和偏好，但很多旅行决策并不是这样发生的。用户可能只是先看看合适选项，再逐渐收窄范围。
 
-Spotlight 因此被设计成一个轻量的推荐队列。它不要求用户先完成一整套筛选条件，而是让用户通过浏览和滑动表达偏好。每一次交互既是探索，也是反馈。
+Spotlight 因此被设计成轻量推荐队列。它不要求用户先完成整套筛选条件，而是让用户通过浏览和滑动表达偏好。每一次交互既是探索，也是反馈。
 
-移动端搜索则采用分步流程，而不是把桌面搜索栏压缩到手机里。目的地、日期和人数被拆到独立页面或模态层中，用户一次只处理一个问题。这让搜索流程在小屏幕上更清晰，也减少了误选和反复确认。
+移动端搜索采用分步流程，而不是把桌面搜索栏压缩到手机里。目的地、日期和人数被拆到独立页面或模态层中，用户一次只处理一个问题。小屏搜索因此更清晰，也减少误选和反复确认。
 
 <CardGroup>
-  <Card title="Spotlight" image="/images/treeing/spotlight.png" alt="Spotlight recommendation queue" width={2880} height={2086} text="用推荐队列降低一开始填写完整筛选条件的压力。" />
-  <Card title="Mobile Search" image="/images/treeing/mobile_search.png" alt="Mobile search flow" width={2048} height={1536} text="将目的地、日期和人数拆成分步决策。" />
+  <Card title="Spotlight" image="/images/treeing/spotlight.png" alt="Spotlight recommendation queue" width={2880} height={2086} text="通过推荐队列降低初期筛选压力。" />
+  <Card title="Mobile Search" image="/images/treeing/mobile_search.png" alt="Mobile search flow" width={2048} height={1536} text="分步决策：目的地、日期、人数。" />
   <Card title="Mobile Listing" image="/images/treeing/mobile_listing.png" alt="Mobile listing page" width={804} height={1748} previewHeight={600} text="在小屏幕上保持房源信息、价格和行动入口清晰。" />
 </CardGroup>
 </Section>
 
 <Section title="把熟客关系产品化">
-Treeing 的核心不是 Guest List 这个单一功能，而是围绕它建立的一整层关系体验。
+Treeing 的核心不是 Guest List 这个单一功能，而是围绕它建立一整层关系体验。
 
-对 Host 来说，Guest List 是一个关系管理模型。它把过去分散在不同渠道里的常客整理成可管理的客群，让 Host 能够持续维护这些关系，而不是每次都重新获客。
+对房东来说，Guest List 是关系管理模型。它把分散在不同渠道里的常客整理成可管理客群，让房东持续维护关系，而不是每次重新获客。
 
-对 Guest 来说，加入 Guest List 之后，关系需要变得可见。My Host 提供了一个长期入口，让用户可以快速回到已经信任的 Host。Host Page 则进一步把 Host 从单个房源背后的运营者，提升为一个可以被关注、理解和再次访问的目的地。
+对旅客来说，加入 Guest List 后，关系需要变得可见。My Hosts 提供长期入口，让用户快速回到可信房东。Host Page 则把房东从单个房源背后的运营者，提升为可以被关注、理解和再次访问的目的地。
 
-Invitation 流程在这里很关键。用户不是被直接要求加入一个列表，而是先看到加入 Guest List 的价值：更容易回访可信 Host，可能获得更好的价格或专属内容，也能减少下一次预订时的搜索成本。
+Invitation 流程在这里很关键。用户不是被直接要求加入列表，而是先看到加入 Guest List 的价值：更容易回访可信房东，可能获得更好的价格或专属内容，也减少下一次预订的搜索成本。
 
 <CardGroup>
-  <Card title="Guest List" image="/images/treeing/guest_list.png" alt="Guest List management" width={2880} height={2048} text="把分散的熟客联系人转化为可管理客群。" />
-  <Card title="Invitation" image="/images/treeing/guest_list_invitation.png" alt="Guest List invitation" width={2880} height={2048} text="让 Guest 在加入前先理解关系价值。" />
-  <Card title="Host Page" image="/images/treeing/host_page.png" alt="Host Page" width={2880} height={5002} text="把信任建立从单个房源详情页扩展到 Host 维度。" />
-  <Card title="My Host" image="/images/treeing/my_host.png" alt="My Host" width={1440} height={1024} text="让可信 Host 的房源可以被快速回访，而不是重新搜索。" />
+  <Card title="Guest List" image="/images/treeing/guest_list.png" alt="Guest List management" width={2880} height={2048} text="把熟客关系转化为可管理客群。" />
+  <Card title="Invitation" image="/images/treeing/guest_list_invitation.png" alt="Guest List invitation" width={2880} height={2048} text="先展示加入价值，再引导操作。" />
+  <Card title="Host Page" image="/images/treeing/host_page.png" alt="Host Page" width={2880} height={5002} text="提升房东为可回访目的地。" />
+  <Card title="My Hosts" image="/images/treeing/my_host.png" alt="My Hosts" width={1440} height={1024} text="快速访问已信任房东的房源。" />
 </CardGroup>
 </Section>
 
-<Section title="降低 Host 的运营成本">
-如果 Treeing 只改善 Guest 端体验，而没有降低 Host 的维护成本，平台很难长期成立。Host 是否愿意持续使用，取决于 Treeing 是否能融入他们原有的运营工作流。
+<Section title="降低房东的运营成本">
+如果 Treeing 只改善旅客端体验，却没有降低房东的维护成本，平台很难长期成立。房东是否愿意持续使用，取决于 Treeing 能否融入他们原有的运营工作流。
 
-Host Dashboard 被设计成日常工作台，而不是单纯的数据展示页。关键经营信号、预订状态和日程信息需要在进入页面时立即可见。当 Host 需要进一步规划时，日历可以展开成更完整的运营视图。
+Host Dashboard 被设计成日常工作台，而不是单纯的数据展示页。关键经营信号、预订状态和日程信息在进入页面时立即可见。当房东需要进一步规划时，日历可以展开成更完整的运营视图。
 
-Listing Editing 则采用接近 Guest 视角的直接编辑方式。Host 不需要在抽象的后台表单中猜测最终展示效果，而是在接近最终页面的结构里修改内容。这减少了设置页面和展示结果之间的心理距离。
+Listing Editing 采用接近旅客视角的直接编辑方式。房东不需要在抽象后台表单中猜测最终展示效果，而是在接近最终页面的结构里修改内容。这减少了设置页面和展示结果之间的心理距离。
 
-Batch Set 和 Calendar Connect 进一步解决多房源、多平台运营问题。Batch Set 把重复的价格和可订状态调整变成批量规则，Calendar Connect 则通过外部平台同步降低接入成本。Treeing 的目标不是要求 Host 放弃已有渠道，而是让 Treeing 成为更容易接入的复购关系层。
+Batch Set 和 Calendar Connect 进一步解决多房源、多平台运营问题。Batch Set 把重复的价格和可订状态调整变成批量规则，Calendar Connect 通过外部平台同步降低接入成本。Treeing 的目标不是要求房东放弃已有渠道，而是成为更容易接入的复购关系层。
 
 <CardGroup>
-  <Card title="Dashboard" image="/images/treeing/host_dashboard.png" alt="Host Dashboard" width={2880} height={2048} text="让经营信号、预订状态和日程信息进入页面时立即可见。" />
-  <Card title="Listing Editing" image="/images/treeing/host_listing.png" alt="Listing Editing" width={2880} height={10327} text="在接近 Guest 视角的页面结构里直接编辑房源。" />
-  <Card title="Batch Set" image="/images/treeing/batch_set.png" alt="Batch Set" width={2048} height={1536} text="把重复的价格和可订状态调整变成批量规则。" />
-  <Card title="Calendar Connect" image="/images/treeing/calendar_connect.png" alt="Calendar Connect" width={2048} height={1536} text="通过外部平台同步降低接入成本。" />
+  <Card title="Dashboard" image="/images/treeing/host_dashboard.png" alt="Host Dashboard" width={2880} height={2048} text="关键信息一眼可见。" />
+  <Card title="Listing Editing" image="/images/treeing/host_listing.png" alt="Listing Editing" width={2880} height={10327} text="直接在接近最终展示的页面修改房源。" />
+  <Card title="Batch Set" image="/images/treeing/batch_set.png" alt="Batch Set" width={2048} height={1536} text="批量调整价格和可订状态。" />
+  <Card title="Calendar Connect" image="/images/treeing/calendar_connect.png" alt="Calendar Connect" width={2048} height={1536} text="同步外部日历，降低维护成本。" />
 </CardGroup>
 </Section>
 
 <Section title="从功能集合到关系型预订系统">
-<WideImage src="/images/treeing/main_page.png" alt="Treeing web main page" width={2880} height={2048} />
+<WideImage src="/images/treeing/platform.png" alt="Treeing web main page" width={2880} height={2048} />
+
+**TL;DR：功能通过关系链连接，形成可复购、可持续运营的系统。**
 
 Treeing 的最终设计不是一组分散功能，而是一套围绕关系运转的产品系统。
 
-Guest 端负责发现和回访。Spotlight 降低首次探索压力，Mobile Search 让移动端决策更清晰，My Host 和 Host Page 则让已经建立过信任的 Host 成为可回访入口。
+旅客端负责发现和回访。Spotlight 降低首次探索压力，Mobile Search 让移动端决策更清晰，My Hosts 和 Host Page 让可信房东成为可回访入口。
 
-Host 端负责关系管理和运营维护。Guest List 管理熟客关系，Dashboard 提供日常经营视图，Listing Editing 降低编辑理解成本，Batch Set 和 Calendar Connect 处理多房源、多平台维护负担。
+房东端负责关系管理和运营维护。Guest List 管理熟客关系，Dashboard 提供日常经营视图，Listing Editing 降低编辑理解成本，Batch Set 和 Calendar Connect 处理多房源、多平台维护负担。
 
-这些功能连接起来后，Treeing 的核心逻辑才成立：Guest 更容易回到可信 Host，Host 更容易维护熟客关系，平台也能从一次性交易转向长期复购。
+这些功能连接起来后，Treeing 的核心逻辑才成立：旅客更容易回到可信房东，房东更容易维护熟客关系，平台也能从一次性交易转向长期复购。
 </Section>
 
 <Section title="Treeing 解决了什么问题">
-Treeing 的设计收益可以从 Guest、Host 和平台三个层面理解。
+Treeing 的设计收益可以从旅客、房东和平台三个层面理解。
 
-对 Guest 来说，Treeing 减少了每次旅行都从零开始搜索的成本。通过 My Host、Host Page 和 Spotlight，用户可以在可信关系和轻量探索之间切换，而不是被迫一开始就完成复杂筛选。
+对旅客来说，Treeing 减少每次旅行从零开始搜索的成本。通过 My Hosts、Host Page 和 Spotlight，用户可以在可信关系和轻量探索之间切换，而不是被迫一开始就完成复杂筛选。
 
-对 Host 来说，Treeing 把熟客关系变成可管理资产。Guest List 帮助 Host 维护长期客群，Batch Set 和 Calendar Connect 降低多房源、多平台维护成本，Listing Editing 让房源更新更接近最终展示效果。
+对房东来说，Treeing 把熟客关系变成可管理资产。Guest List 帮助房东维护长期客群，Batch Set 和 Calendar Connect 降低多房源、多平台维护成本，Listing Editing 让房源更新更接近最终展示效果。
 
-对平台来说，Treeing 的价值从房源库存扩展到关系网络。平台不只是促成一次预订，也帮助 Host 和 Guest 建立可以复访、复购、持续运营的连接。
+对平台来说，Treeing 的价值从房源库存扩展到关系网络。平台不只是促成一次预订，也帮助房东和旅客建立可以复访、复购、持续运营的连接。
 
 <CardGroup>
-  <Card title="Guest" text="更快回访可信 Host，减少从零搜索的成本。" />
-  <Card title="Host" text="更低成本维护熟客关系和多房源运营。" />
-  <Card title="Platform" text="从一次性交易转向关系驱动的复购。" />
+  <Card icon="suitcase-solid-full" title="旅客" text="减少重复搜索成本，提供复购渠道。" />
+  <Card icon="house-solid-full" title="房东" text="降低多房源、多平台维护成本。提供管理熟客的平台。" />
+  <Card icon="globe-solid-full" title="平台" text="从一次性交易转向关系驱动的复购。" />
 </CardGroup>
 </Section>
 
 <Section title="旅行平台不只是搜索">
-Treeing 让我重新理解了旅行预订产品的设计重点。这个项目一开始看起来像一个房源平台，但真正复杂的地方不是展示更多房源，而是判断平台应该围绕什么建立长期价值。
+**TL;DR：设计重点是关系如何成为预订入口，而非单页优化。**
 
-如果只从 Guest 端看，问题会被理解成搜索体验不够好；如果只从 Host 端看，问题又会变成后台工具不够高效。但 Treeing 的关键在于，这两个问题其实是同一个系统的两端。Guest 需要更可信的回访路径，Host 需要更低成本的关系维护工具。只有这两端同时成立，熟客关系才可能成为平台价值。
+Treeing 让我重新理解旅行预订产品的设计重点。这个项目一开始看起来像一个房源平台，但真正复杂的地方不是展示更多房源，而是判断平台应该围绕什么建立长期价值。
+
+如果只从旅客端看，问题会被理解成搜索体验不够好。如果只从房东端看，问题又会变成后台工具不够高效。但 Treeing 的关键在于，这两个问题其实是同一个系统的两端。
+
+旅客需要更可信的回访路径，房东需要更低成本的关系维护工具。只有这两端同时成立，熟客关系才可能成为平台价值。
 
 最终，我把设计重点放在“关系如何成为预订入口”上，而不是单纯优化某一个页面。这也让我更明确地意识到：产品设计不只是把流程做顺，而是要找到业务模式、用户行为和操作效率之间可以闭环的位置。
 

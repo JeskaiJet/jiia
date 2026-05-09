@@ -15,8 +15,6 @@ const VIEWER_THUMB_HEIGHT = 64;
 const VIEWER_CONTENT_MAX_HEIGHT_RATIO = 0.88;
 const VIEWER_SINGLE_CONTENT_MAX_HEIGHT_RATIO = 0.96;
 const VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD = 2500;
-const HORIZONTAL_SCROLL_THUMB_MIN_WIDTH = 30;
-const HORIZONTAL_SCROLL_THUMB_MAX_WIDTH = 74;
 const PROJECT_DETAIL_DURATION = 0.52;
 const PROJECT_DETAIL_INNER_DURATION = 0.42;
 const PROJECT_SCROLL_DURATION = 0.44;
@@ -28,7 +26,6 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   const projectLookup = new Map(projects.map((project) => [project.id, project]));
   const previewState = getPreviewState(window.location.search, projectLookup);
   const supportsFinePointer = window.matchMedia("(pointer: fine)").matches;
-  const supportsCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const pointerPosition = {
     x: window.innerWidth / 2,
@@ -63,7 +60,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   let caseStudyHistoryMode = state.caseStudyOpen ? "loaded" : "none";
   let entranceMotionStarted = false;
   let pendingPointerFrame = 0;
-  let pendingHorizontalScrollbarFrame = 0;
+  let pendingHorizontalScrollControlsFrame = 0;
   let latestPointerTarget = null;
 
   root.innerHTML = renderApp(content, state);
@@ -172,7 +169,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   syncActiveProject(true);
   syncCaseStudy(true);
   syncLightEffects(false);
-  setupHorizontalScrollbars();
+  setupHorizontalScrollControls();
   bindEvents();
   scheduleImagePreload();
   if (!deferEntranceMotion) {
@@ -248,7 +245,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
       hideCursor();
       syncPanels(true);
       syncPortfolioBarBorder();
-      scheduleHorizontalScrollbarUpdate();
+      scheduleHorizontalScrollControlsUpdate();
 
       if (state.viewerOpen) {
         syncImageViewer(true);
@@ -359,29 +356,16 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     }
   }
 
-  function setupHorizontalScrollbars() {
+  function setupHorizontalScrollControls() {
     root.querySelectorAll("[data-horizontal-scroll-area]").forEach((area) => {
-      const scrollbar = area.parentElement?.querySelector("[data-horizontal-scrollbar]");
-      const track = scrollbar?.querySelector("[data-horizontal-scrollbar-track]");
-      const thumb = scrollbar?.querySelector("[data-horizontal-scrollbar-thumb]");
+      const controls = area.parentElement?.querySelector("[data-horizontal-scroll-controls]");
+      const previousButton = controls?.querySelector("[data-horizontal-scroll-previous]");
+      const nextButton = controls?.querySelector("[data-horizontal-scroll-next]");
 
-      if (!scrollbar || !track || !thumb) {
+      if (!controls || !previousButton || !nextButton) {
         return;
       }
 
-      let dragStartX = 0;
-      let dragStartScrollLeft = 0;
-      let draggingPointerId = null;
-      let pendingThumbFrame = 0;
-      let pendingDragFrame = 0;
-      let pendingDragScrollLeft = 0;
-      const scrollMetrics = {
-        maxScrollLeft: 0,
-        trackWidth: 0,
-        thumbWidth: 0,
-        maxThumbX: 1,
-        visible: false
-      };
       const scrollState = {
         scrollLeft: area.scrollLeft
       };
@@ -393,187 +377,99 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
         }
       });
 
-      const getTrackWidth = () => scrollbar.clientWidth || track.clientWidth || area.clientWidth;
-      const getThumbWidth = (trackWidth) =>
-        Math.max(
-          HORIZONTAL_SCROLL_THUMB_MIN_WIDTH,
-          Math.min(HORIZONTAL_SCROLL_THUMB_MAX_WIDTH, trackWidth, (area.clientWidth / area.scrollWidth) * trackWidth)
-        );
-      const measureScrollbar = () => {
-        scrollMetrics.maxScrollLeft = Math.max(0, area.scrollWidth - area.clientWidth);
-        scrollMetrics.trackWidth = getTrackWidth();
-        scrollMetrics.visible = !supportsCoarsePointer && scrollMetrics.maxScrollLeft > 1 && scrollMetrics.trackWidth > 0;
-        scrollMetrics.thumbWidth = scrollMetrics.visible ? getThumbWidth(scrollMetrics.trackWidth) : 0;
-        scrollMetrics.maxThumbX = Math.max(1, scrollMetrics.trackWidth - scrollMetrics.thumbWidth);
-      };
-      const renderThumb = () => {
-        if (!scrollMetrics.visible) {
-          thumb.style.removeProperty("width");
-          thumb.style.removeProperty("transform");
-          return;
-        }
-
-        const thumbX =
-          scrollMetrics.maxScrollLeft > 0 ? (area.scrollLeft / scrollMetrics.maxScrollLeft) * scrollMetrics.maxThumbX : 0;
-
-        thumb.style.width = `${scrollMetrics.thumbWidth}px`;
-        thumb.style.transform = `translate(${thumbX}px, -50%)`;
-      };
-      const scheduleThumbRender = () => {
-        if (pendingThumbFrame) {
-          return;
-        }
-
-        pendingThumbFrame = window.requestAnimationFrame(() => {
-          pendingThumbFrame = 0;
-          renderThumb();
-        });
-      };
+      const getMaxScrollLeft = () => Math.max(0, area.scrollWidth - area.clientWidth);
       const setAreaScrollLeft = (scrollLeft, immediate = false) => {
-        const maxScrollLeft = scrollMetrics.maxScrollLeft || Math.max(0, area.scrollWidth - area.clientWidth);
+        const maxScrollLeft = getMaxScrollLeft();
         const nextScrollLeft = Math.min(Math.max(scrollLeft, 0), maxScrollLeft);
 
         if (immediate || prefersReducedMotion) {
           gsap.killTweensOf(scrollState);
           scrollState.scrollLeft = nextScrollLeft;
           area.scrollLeft = nextScrollLeft;
-          scheduleThumbRender();
+          update();
           return;
         }
 
         smoothScrollTo(nextScrollLeft);
       };
-      const scheduleDragScroll = (scrollLeft) => {
-        pendingDragScrollLeft = scrollLeft;
+      const getChildScrollTarget = (direction) => {
+        const currentScrollLeft = area.scrollLeft;
+        const childOffsets = Array.from(area.children)
+          .map((child) => child.offsetLeft)
+          .filter((offsetLeft) => Number.isFinite(offsetLeft));
 
-        if (pendingDragFrame) {
-          return;
+        if (!childOffsets.length) {
+          return currentScrollLeft + direction * area.clientWidth * 0.86;
         }
 
-        pendingDragFrame = window.requestAnimationFrame(() => {
-          pendingDragFrame = 0;
-          setAreaScrollLeft(pendingDragScrollLeft, true);
-        });
+        if (direction > 0) {
+          return childOffsets.find((offsetLeft) => offsetLeft > currentScrollLeft + 4) ?? getMaxScrollLeft();
+        }
+
+        for (let index = childOffsets.length - 1; index >= 0; index -= 1) {
+          if (childOffsets[index] < currentScrollLeft - 4) {
+            return childOffsets[index];
+          }
+        }
+
+        return 0;
       };
-
       const update = () => {
-        measureScrollbar();
+        const maxScrollLeft = getMaxScrollLeft();
+        const isVisible = maxScrollLeft > 1;
 
-        scrollbar.classList.toggle("is-visible", scrollMetrics.visible);
-        scrollbar.setAttribute("aria-hidden", String(!scrollMetrics.visible));
-        renderThumb();
+        controls.classList.toggle("is-visible", isVisible);
+        controls.setAttribute("aria-hidden", String(!isVisible));
+        previousButton.disabled = !isVisible || area.scrollLeft <= 1;
+        nextButton.disabled = !isVisible || area.scrollLeft >= maxScrollLeft - 1;
       };
 
       area.addEventListener(
         "scroll",
         () => {
           scrollState.scrollLeft = area.scrollLeft;
-          scheduleThumbRender();
+          update();
         },
         { passive: true }
       );
-      track.addEventListener("pointerdown", (event) => {
-        if (event.target === thumb) {
-          return;
-        }
-
-        update();
-        const trackRect = track.getBoundingClientRect();
-        const thumbRect = thumb.getBoundingClientRect();
-        const targetX = event.clientX - trackRect.left - thumbRect.width / 2;
-
-        setAreaScrollLeft((Math.min(Math.max(targetX, 0), scrollMetrics.maxThumbX) / scrollMetrics.maxThumbX) * scrollMetrics.maxScrollLeft);
-      });
-
-      thumb.addEventListener("pointerdown", (event) => {
+      previousButton.addEventListener("click", (event) => {
         event.preventDefault();
-        update();
-        dragStartX = event.clientX;
-        dragStartScrollLeft = area.scrollLeft;
-        scrollState.scrollLeft = area.scrollLeft;
-        draggingPointerId = event.pointerId;
-        if (thumb.setPointerCapture) {
-          try {
-            thumb.setPointerCapture(event.pointerId);
-          } catch {
-            // Pointer capture can fail for synthetic events; dragging still works with the local id guard.
-          }
-        }
-        scrollbar.classList.add("is-dragging");
+        setAreaScrollLeft(getChildScrollTarget(-1));
       });
-
-      thumb.addEventListener("pointermove", (event) => {
-        if (draggingPointerId !== event.pointerId) {
-          return;
-        }
-
-        const scrollDelta = ((event.clientX - dragStartX) / scrollMetrics.maxThumbX) * scrollMetrics.maxScrollLeft;
-
-        scheduleDragScroll(dragStartScrollLeft + scrollDelta);
-      });
-
-      thumb.addEventListener("pointerup", (event) => {
-        if (thumb.hasPointerCapture?.(event.pointerId)) {
-          thumb.releasePointerCapture(event.pointerId);
-        }
-
-        draggingPointerId = null;
-        scrollbar.classList.remove("is-dragging");
-      });
-
-      thumb.addEventListener("pointercancel", (event) => {
-        if (thumb.hasPointerCapture?.(event.pointerId)) {
-          thumb.releasePointerCapture(event.pointerId);
-        }
-
-        draggingPointerId = null;
-        scrollbar.classList.remove("is-dragging");
+      nextButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        setAreaScrollLeft(getChildScrollTarget(1));
       });
 
       update();
     });
 
-    scheduleHorizontalScrollbarUpdate();
+    scheduleHorizontalScrollControlsUpdate();
   }
 
-  function scheduleHorizontalScrollbarUpdate() {
-    if (pendingHorizontalScrollbarFrame) {
+  function scheduleHorizontalScrollControlsUpdate() {
+    if (pendingHorizontalScrollControlsFrame) {
       return;
     }
 
-    pendingHorizontalScrollbarFrame = window.requestAnimationFrame(() => {
-      pendingHorizontalScrollbarFrame = 0;
-      root.querySelectorAll("[data-horizontal-scrollbar].is-visible, [data-horizontal-scrollbar]").forEach((scrollbar) => {
-        const area = scrollbar.parentElement?.querySelector("[data-horizontal-scroll-area]");
-        const track = scrollbar.querySelector("[data-horizontal-scrollbar-track]");
-        const thumb = scrollbar.querySelector("[data-horizontal-scrollbar-thumb]");
+    pendingHorizontalScrollControlsFrame = window.requestAnimationFrame(() => {
+      pendingHorizontalScrollControlsFrame = 0;
+      root.querySelectorAll("[data-horizontal-scroll-controls]").forEach((controls) => {
+        const area = controls.parentElement?.querySelector("[data-horizontal-scroll-area]");
+        const previousButton = controls.querySelector("[data-horizontal-scroll-previous]");
+        const nextButton = controls.querySelector("[data-horizontal-scroll-next]");
 
-        if (!area || !track || !thumb) {
+        if (!area || !previousButton || !nextButton) {
           return;
         }
 
         const maxScrollLeft = Math.max(0, area.scrollWidth - area.clientWidth);
-        const trackWidth = scrollbar.clientWidth || track.clientWidth || area.clientWidth;
-        const isVisible = !supportsCoarsePointer && maxScrollLeft > 1 && trackWidth > 0;
+        const isVisible = maxScrollLeft > 1;
 
-        scrollbar.classList.toggle("is-visible", isVisible);
-        scrollbar.setAttribute("aria-hidden", String(!isVisible));
-
-        if (!isVisible) {
-          thumb.style.removeProperty("width");
-          thumb.style.removeProperty("transform");
-          return;
-        }
-
-        const thumbWidth = Math.max(
-          HORIZONTAL_SCROLL_THUMB_MIN_WIDTH,
-          Math.min(HORIZONTAL_SCROLL_THUMB_MAX_WIDTH, trackWidth, (area.clientWidth / area.scrollWidth) * trackWidth)
-        );
-        const maxThumbX = Math.max(0, trackWidth - thumbWidth);
-        const thumbX = maxScrollLeft > 0 ? (area.scrollLeft / maxScrollLeft) * maxThumbX : 0;
-
-        thumb.style.width = `${thumbWidth}px`;
-        thumb.style.transform = `translate(${thumbX}px, -50%)`;
+        controls.classList.toggle("is-visible", isVisible);
+        controls.setAttribute("aria-hidden", String(!isVisible));
+        previousButton.disabled = !isVisible || area.scrollLeft <= 1;
+        nextButton.disabled = !isVisible || area.scrollLeft >= maxScrollLeft - 1;
       });
     });
   }
@@ -1029,8 +925,8 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     });
 
     syncProjectGradients(immediate, "afterDetail");
-    scheduleHorizontalScrollbarUpdate();
-    window.setTimeout(scheduleHorizontalScrollbarUpdate, getProjectToggleWaitDuration() + 40);
+    scheduleHorizontalScrollControlsUpdate();
+    window.setTimeout(scheduleHorizontalScrollControlsUpdate, getProjectToggleWaitDuration() + 40);
   }
 
   function syncProjectGradients(immediate, mode = "default") {
@@ -1190,7 +1086,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
         gsap.set(refs.homeScene, { x: -window.innerWidth });
         gsap.set(refs.caseStudy, { x: 0 });
       }
-      scheduleHorizontalScrollbarUpdate();
+      scheduleHorizontalScrollControlsUpdate();
       return;
     }
 
@@ -2677,7 +2573,7 @@ function renderCaseStudyMdxCardGroup(project, cards, groupKey) {
       <div class="case-study-mdx-card-group" data-horizontal-scroll-area aria-label="Case study cards">
         ${cards.map((card, index) => renderCaseStudyMdxCard(project, card, `${groupKey}-card-${index}`)).join("")}
       </div>
-      ${renderHorizontalScrollbar()}
+      ${renderHorizontalScrollControls()}
     </div>
   `;
 }
@@ -2686,6 +2582,7 @@ function renderCaseStudyMdxCard(project, card, triggerKey) {
   const title = card.title ?? "";
   const text = card.text ?? "";
   const hasImage = Boolean(card.image);
+  const iconPath = getMdxIconPath(card.icon);
   const presentation = getMdxTokenClassSegment(card.presentation);
   const cardClassName = [
     "case-study-mdx-card",
@@ -2720,6 +2617,7 @@ function renderCaseStudyMdxCard(project, card, triggerKey) {
           : ""
       }
       <div class="case-study-mdx-card__body">
+        <span class="case-study-mdx-card__icon${iconPath ? "" : " case-study-mdx-card__icon--empty"}" aria-hidden="true">${iconPath ? `<img src="${escapeHtml(iconPath)}" alt="" loading="lazy" />` : ""}</span>
         ${title ? `<h3>${escapeHtml(title)}</h3>` : ""}
         ${text ? `<p>${renderInlineMarkdown(text)}</p>` : ""}
       </div>
@@ -2791,12 +2689,15 @@ function renderCaseStudyMdxPlaceholder(attributes, className) {
   `;
 }
 
-function renderHorizontalScrollbar() {
+function renderHorizontalScrollControls() {
   return `
-    <div class="horizontal-scrollbar" data-horizontal-scrollbar aria-hidden="true">
-      <div class="horizontal-scrollbar__track" data-horizontal-scrollbar-track>
-        <div class="horizontal-scrollbar__thumb" data-horizontal-scrollbar-thumb></div>
-      </div>
+    <div class="horizontal-scroll-controls" data-horizontal-scroll-controls aria-hidden="true">
+      <button class="horizontal-scroll-controls__button" type="button" data-horizontal-scroll-previous aria-label="Scroll left">
+        <img src="/icons/chevron-left-solid-full.svg" alt="" aria-hidden="true" loading="lazy" />
+      </button>
+      <button class="horizontal-scroll-controls__button" type="button" data-horizontal-scroll-next aria-label="Scroll right">
+        <img src="/icons/chevron-right-solid-full.svg" alt="" aria-hidden="true" loading="lazy" />
+      </button>
     </div>
   `;
 }
@@ -2909,7 +2810,7 @@ function renderProject(project, content) {
             <div class="project-card__gallery" data-horizontal-scroll-area>
               ${renderProjectGallery(project, content)}
             </div>
-            ${renderHorizontalScrollbar()}
+            ${renderHorizontalScrollControls()}
           </div>
           <div class="project-card__description">
             ${renderProjectDescription(project, locale)}
@@ -3423,6 +3324,11 @@ function getMdxTokenClassSegment(value) {
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9_-]/g, "");
+}
+
+function getMdxIconPath(value) {
+  const iconName = getMdxTokenClassSegment(value);
+  return iconName ? `/icons/${iconName}.svg` : "";
 }
 
 function renderMarkdown(markdown) {
