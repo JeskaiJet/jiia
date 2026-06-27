@@ -1,9 +1,11 @@
 import { gsap } from "gsap";
 import { getContent } from "./content/index.js";
+import { galleryCategories, galleryItems } from "./data/gallery.js";
 import { portfolioAssets, projects } from "./data/projects.js";
 
-const SECTION_ORDER = ["resume", "portfolio"];
+const SECTION_ORDER = ["gallery", "portfolio"];
 const DEFAULT_ACTIVE_PROJECT_ID = null;
+const DEFAULT_GALLERY_CATEGORY = "ui";
 const DEFAULT_NAME_WEIGHT = 500;
 const DEFAULT_NAME_OPSZ = 411;
 const DEFAULT_NAME_TRACK = 0.015;
@@ -34,6 +36,8 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   const state = {
     activeProjectId: previewState.activeProjectId ?? DEFAULT_ACTIVE_PROJECT_ID,
     openSection: previewState.openSection,
+    resumeOpen: Boolean(previewState.resumeOpen),
+    activeGalleryCategory: getSafeGalleryCategory(previewState.activeGalleryCategory),
     heroInteractive: false,
     viewerOpen: false,
     viewerProjectId: null,
@@ -61,6 +65,8 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   let entranceMotionStarted = false;
   let pendingPointerFrame = 0;
   let pendingHorizontalScrollControlsFrame = 0;
+  let pendingGalleryColumnFillFrame = 0;
+  let pendingGalleryColumnFillTimeout = 0;
   let latestPointerTarget = null;
 
   root.innerHTML = renderApp(content, state);
@@ -72,9 +78,18 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     heroLockup: root.querySelector("[data-hero-lockup]"),
     heroName: root.querySelector("[data-hero-name]"),
     heroTagline: root.querySelector("[data-hero-tagline]"),
+    heroResumeTrigger: root.querySelector("[data-hero-resume-trigger]"),
     lightEffectsToggle: root.querySelector("[data-light-effects-toggle]"),
     sectionCursor: root.querySelector("[data-section-cursor]"),
     sectionCursorLabel: root.querySelector("[data-section-cursor-label]"),
+    resumeOverlay: root.querySelector("[data-resume-overlay]"),
+    resumeOverlaySheet: root.querySelector("[data-resume-overlay-sheet]"),
+    resumeOverlayArrow: root.querySelector("[data-resume-overlay-arrow]"),
+    galleryGrid: root.querySelector("[data-gallery-grid]"),
+    galleryFillLayer: root.querySelector("[data-gallery-fill-layer]"),
+    galleryCategories: root.querySelector("[data-gallery-categories]"),
+    galleryCategoryIndicator: root.querySelector("[data-gallery-category-indicator]"),
+    galleryPlaceholders: Array.from(root.querySelectorAll("[data-gallery-placeholder]")),
     projectList: root.querySelector("[data-project-list]"),
     projectCards: Array.from(root.querySelectorAll("[data-project-card]")),
     viewer: root.querySelector("[data-image-viewer]"),
@@ -147,6 +162,9 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   gsap.set(refs.viewer, { autoAlpha: 0 });
   gsap.set(refs.viewerMask, { autoAlpha: 0 });
   gsap.set(refs.viewerSwitcher, { autoAlpha: 0, y: prefersReducedMotion ? 0 : 18 });
+  gsap.set(refs.resumeOverlay, { autoAlpha: state.resumeOpen ? 1 : 0 });
+  gsap.set(refs.resumeOverlaySheet, { y: state.resumeOpen || prefersReducedMotion ? 0 : window.innerHeight });
+  gsap.set(refs.resumeOverlayArrow, { rotate: state.resumeOpen ? 180 : 0 });
   gsap.set(refs.homeScene, { x: state.caseStudyOpen ? -window.innerWidth : 0 });
   gsap.set(refs.caseStudy, {
     autoAlpha: state.caseStudyOpen ? 1 : 0,
@@ -154,20 +172,35 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   });
   refs.viewer.setAttribute("aria-hidden", "true");
   refs.caseStudy.setAttribute("aria-hidden", String(!state.caseStudyOpen));
+  refs.resumeOverlay.setAttribute("aria-hidden", String(!state.resumeOpen));
 
   if ("inert" in refs.viewer) {
     refs.viewer.inert = true;
+  }
+
+  if ("inert" in refs.resumeOverlay) {
+    refs.resumeOverlay.inert = !state.resumeOpen;
   }
 
   if ("inert" in refs.caseStudy) {
     refs.caseStudy.inert = !state.caseStudyOpen;
   }
 
-  window.history.replaceState({ caseStudyProjectId: state.caseStudyProjectId }, "", window.location.href);
+  window.history.replaceState(
+    {
+      caseStudyProjectId: state.caseStudyProjectId,
+      openSection: state.openSection,
+      resumeOpen: state.resumeOpen
+    },
+    "",
+    window.location.href
+  );
 
   syncPanels(true);
   syncActiveProject(true);
   syncCaseStudy(true);
+  syncResumeOverlay(true);
+  syncGalleryCategory(true);
   syncLightEffects(false);
   setupHorizontalScrollControls();
   bindEvents();
@@ -187,17 +220,54 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
         pulseCursor();
         state.openSection = state.openSection === key ? null : key;
         syncPanels(false);
+        updateSectionHistory(state.openSection);
         refreshCursorFromLastPointer();
       });
     });
+
+    refs.heroResumeTrigger.addEventListener("click", () => {
+      openResumeOverlay();
+    });
+
+    refs.resumeOverlay.addEventListener("click", handleResumeClick);
 
     refs.lightEffectsToggle.addEventListener("click", () => {
       state.lightEffectsEnabled = !state.lightEffectsEnabled;
       syncLightEffects(true);
     });
 
-    panels.resume.body.addEventListener("click", handleResumeClick);
     panels.portfolio.body.addEventListener("scroll", syncPortfolioBarBorder, { passive: true });
+
+    refs.galleryCategories.addEventListener("click", (event) => {
+      const categoryTrigger = event.target.closest("[data-gallery-category]");
+      if (!categoryTrigger) {
+        return;
+      }
+
+      state.activeGalleryCategory = categoryTrigger.dataset.galleryCategory || DEFAULT_GALLERY_CATEGORY;
+      syncGalleryCategory(false);
+      refreshCursorFromLastPointer();
+    });
+
+    refs.galleryGrid.addEventListener("click", (event) => {
+      const galleryTrigger = event.target.closest("[data-gallery-item-trigger]");
+      if (!galleryTrigger) {
+        return;
+      }
+
+      event.preventDefault();
+      openImageViewer(galleryTrigger);
+    });
+
+    refs.galleryGrid.addEventListener(
+      "load",
+      (event) => {
+        if (event.target instanceof HTMLImageElement && event.target.classList.contains("gallery-card__image")) {
+          scheduleGalleryColumnFill();
+        }
+      },
+      true
+    );
 
     refs.projectList.addEventListener("click", (event) => {
       const learnMoreTrigger = event.target.closest("[data-project-learn-more]");
@@ -244,6 +314,8 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     window.addEventListener("resize", () => {
       hideCursor();
       syncPanels(true);
+      syncGalleryCategoryIndicator(true);
+      scheduleGalleryColumnFill();
       syncPortfolioBarBorder();
       scheduleHorizontalScrollControlsUpdate();
 
@@ -271,9 +343,16 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
         return;
       }
 
+      if (event.key === "Escape" && state.resumeOpen) {
+        event.preventDefault();
+        closeResumeOverlay();
+        return;
+      }
+
       if (event.key === "Escape" && state.openSection) {
         state.openSection = null;
         syncPanels(false);
+        updateSectionHistory(null);
         refreshCursorFromLastPointer();
       }
     });
@@ -328,12 +407,20 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   }
 
   function handleResumeClick(event) {
+    const closeTrigger = event.target.closest("[data-resume-overlay-close]");
+    if (closeTrigger || event.target === refs.resumeOverlay) {
+      event.preventDefault();
+      closeResumeOverlay();
+      return;
+    }
+
     const featuredProjectTrigger = event.target.closest("[data-resume-featured-project]");
     if (!featuredProjectTrigger) {
       return;
     }
 
     event.preventDefault();
+    closeResumeOverlay({ immediate: true });
     void openPortfolioProject(featuredProjectTrigger.dataset.resumeFeaturedProject);
   }
 
@@ -536,6 +623,14 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
       };
     }
 
+    const visualGalleryTrigger = target.closest("[data-gallery-item-trigger]");
+    if (visualGalleryTrigger) {
+      return {
+        label: content.cursor.viewLabel,
+        cursorElement: visualGalleryTrigger
+      };
+    }
+
     const galleryTrigger = target.closest("[data-project-gallery-trigger]");
     if (galleryTrigger) {
       return {
@@ -701,6 +796,11 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
       });
     });
 
+    if (state.openSection === "gallery") {
+      syncGalleryCategoryIndicator(immediate);
+      scheduleGalleryColumnFill(immediate ? 0 : 520);
+    }
+
     syncPortfolioBarBorder();
     syncProjectGradients(immediate);
   }
@@ -723,14 +823,378 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     }
   }
 
+  function syncGalleryCategory(immediate = false) {
+    const activeCategory = getSafeGalleryCategory(state.activeGalleryCategory);
+    let visibleItems = 0;
+    let visibleAnimationIndex = 0;
+
+    state.activeGalleryCategory = activeCategory;
+
+    refs.galleryCategories.querySelectorAll("[data-gallery-category]").forEach((button) => {
+      const isActive = button.dataset.galleryCategory === activeCategory;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", String(isActive));
+    });
+
+    refs.galleryGrid.querySelectorAll("[data-gallery-item]").forEach((item) => {
+      const itemCategory = item.dataset.galleryItemCategory;
+      const isVisible = itemCategory === activeCategory;
+
+      if (isVisible) {
+        visibleItems += 1;
+      }
+
+      setGalleryNodeVisibility(item, isVisible, immediate, visibleAnimationIndex);
+
+      if (isVisible) {
+        visibleAnimationIndex += 1;
+      }
+    });
+
+    refs.galleryPlaceholders.forEach((placeholder) => {
+      setGalleryNodeVisibility(placeholder, visibleItems <= 0, immediate, visibleAnimationIndex);
+      visibleAnimationIndex += visibleItems <= 0 ? 1 : 0;
+    });
+
+    syncGalleryCategoryIndicator(immediate);
+    scheduleGalleryColumnFill(immediate ? 0 : 420);
+  }
+
+  function setGalleryNodeVisibility(node, isVisible, immediate = false, index = 0) {
+    const wasHidden = node.hidden;
+
+    gsap.killTweensOf(node);
+
+    if (isVisible) {
+      node.hidden = false;
+
+      if (immediate || prefersReducedMotion) {
+        gsap.set(node, { autoAlpha: 1, y: 0, scale: 1 });
+        return;
+      }
+
+      if (!wasHidden) {
+        gsap.to(node, {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.2,
+          ease: "power2.out",
+          overwrite: "auto"
+        });
+        return;
+      }
+
+      gsap.fromTo(
+        node,
+        { autoAlpha: 0, y: 18, scale: 0.985 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.36,
+          delay: Math.min(index * 0.018, 0.18),
+          ease: "power3.out",
+          overwrite: "auto"
+        }
+      );
+      return;
+    }
+
+    if (wasHidden) {
+      return;
+    }
+
+    if (immediate || prefersReducedMotion) {
+      node.hidden = true;
+      gsap.set(node, { autoAlpha: 0, y: 0, scale: 1 });
+      return;
+    }
+
+    gsap.to(node, {
+      autoAlpha: 0,
+      y: -12,
+      scale: 0.985,
+      duration: 0.2,
+      ease: "power2.in",
+      overwrite: "auto",
+      onComplete: () => {
+        node.hidden = true;
+        gsap.set(node, { y: 0, scale: 1 });
+        scheduleGalleryColumnFill();
+      }
+    });
+  }
+
+  function scheduleGalleryColumnFill(delay = 0) {
+    if (!refs.galleryGrid) {
+      return;
+    }
+
+    if (delay > 0) {
+      if (pendingGalleryColumnFillTimeout) {
+        window.clearTimeout(pendingGalleryColumnFillTimeout);
+      }
+
+      pendingGalleryColumnFillTimeout = window.setTimeout(() => {
+        pendingGalleryColumnFillTimeout = 0;
+        scheduleGalleryColumnFill();
+      }, delay);
+      return;
+    }
+
+    if (pendingGalleryColumnFillFrame) {
+      return;
+    }
+
+    pendingGalleryColumnFillFrame = window.requestAnimationFrame(() => {
+      pendingGalleryColumnFillFrame = 0;
+      syncGalleryColumnFill();
+    });
+  }
+
+  function syncGalleryColumnFill() {
+    const fillLayer = refs.galleryFillLayer;
+    const cards = Array.from(refs.galleryGrid.querySelectorAll(".gallery-card"));
+
+    cards.forEach((card) => {
+      card.classList.remove("is-gallery-column-end");
+    });
+
+    fillLayer?.replaceChildren();
+
+    if (state.openSection !== "gallery") {
+      return;
+    }
+
+    if (!fillLayer) {
+      return;
+    }
+
+    const visibleCards = cards
+      .filter((card) => !card.hidden && card.getClientRects().length)
+      .map((card) => ({ card, rect: card.getBoundingClientRect() }))
+      .filter(({ rect }) => rect.width > 0 && rect.height > 0);
+
+    if (!visibleCards.length) {
+      return;
+    }
+
+    const columns = new Map();
+
+    visibleCards.forEach((entry) => {
+      const key = String(Math.round(entry.rect.left));
+      const current = columns.get(key);
+
+      if (!current || entry.rect.bottom > current.rect.bottom) {
+        columns.set(key, entry);
+      }
+    });
+
+    if (columns.size <= 1) {
+      return;
+    }
+
+    const columnEnds = Array.from(columns.values());
+    const gridRect = refs.galleryGrid.getBoundingClientRect();
+    const categoryTop = refs.galleryCategories?.getBoundingClientRect().top ?? 0;
+    const viewportBottom = categoryTop > 0 ? categoryTop : window.innerHeight;
+    const targetBottom = Math.max(viewportBottom, ...columnEnds.map(({ rect }) => rect.bottom));
+    const fragment = document.createDocumentFragment();
+
+    columnEnds.forEach(({ card, rect }) => {
+      const fillHeight = Math.max(0, targetBottom - rect.bottom);
+      const fill = document.createElement("span");
+
+      card.classList.add("is-gallery-column-end");
+      fill.className = "gallery-column-fill";
+      fill.dataset.galleryColumnFillFor = card.dataset.galleryItemId || "placeholder";
+      fill.style.left = `${(rect.left - gridRect.left).toFixed(3)}px`;
+      fill.style.top = `${(rect.bottom - gridRect.top).toFixed(3)}px`;
+      fill.style.width = `${rect.width.toFixed(3)}px`;
+      fill.style.height = `${fillHeight.toFixed(3)}px`;
+      fragment.append(fill);
+    });
+
+    fillLayer.replaceChildren(fragment);
+  }
+
+  function syncGalleryCategoryIndicator(immediate = false) {
+    if (!refs.galleryCategories || !refs.galleryCategoryIndicator) {
+      return;
+    }
+
+    const activeButton = refs.galleryCategories.querySelector(".gallery-category.is-active");
+
+    if (!activeButton || !refs.galleryCategories.getClientRects().length) {
+      gsap.set(refs.galleryCategories, {
+        "--gallery-category-indicator-width": "0px"
+      });
+      return;
+    }
+
+    const categoriesRect = refs.galleryCategories.getBoundingClientRect();
+    const buttonRect = activeButton.getBoundingClientRect();
+    const x = Math.max(buttonRect.left - categoriesRect.left, 0);
+    const width = Math.max(buttonRect.width, 0);
+    const targetVars = {
+      "--gallery-category-indicator-x": `${x}px`,
+      "--gallery-category-indicator-width": `${width}px`
+    };
+
+    if (immediate || prefersReducedMotion) {
+      gsap.set(refs.galleryCategories, targetVars);
+      return;
+    }
+
+    gsap.to(refs.galleryCategories, {
+      ...targetVars,
+      duration: 0.36,
+      ease: "expo.out",
+      overwrite: "auto"
+    });
+  }
+
+  function openResumeOverlay() {
+    if (state.resumeOpen || state.viewerOpen || state.caseStudyOpen) {
+      return;
+    }
+
+    state.resumeOpen = true;
+    syncResumeOverlay(false);
+  }
+
+  function closeResumeOverlay({ immediate = false } = {}) {
+    if (!state.resumeOpen) {
+      return;
+    }
+
+    state.resumeOpen = false;
+    syncResumeOverlay(immediate);
+  }
+
+  function syncResumeOverlay(immediate) {
+    refs.appShell.dataset.resumeOpen = String(state.resumeOpen);
+    refs.resumeOverlay.setAttribute("aria-hidden", String(!state.resumeOpen));
+
+    if ("inert" in refs.resumeOverlay) {
+      refs.resumeOverlay.inert = !state.resumeOpen;
+    }
+
+    gsap.killTweensOf([refs.resumeOverlay, refs.resumeOverlaySheet, refs.resumeOverlayArrow]);
+
+    if (state.resumeOpen) {
+      refs.resumeOverlay.classList.add("is-open");
+      gsap.set(refs.resumeOverlay, { pointerEvents: "auto" });
+      gsap.to(refs.resumeOverlayArrow, {
+        rotate: 180,
+        duration: immediate || prefersReducedMotion ? 0 : 0.72,
+        ease: "power3.out",
+        overwrite: "auto"
+      });
+      gsap.to(refs.resumeOverlay, {
+        autoAlpha: 1,
+        duration: immediate || prefersReducedMotion ? 0 : 0.22,
+        ease: "power2.out",
+        overwrite: "auto"
+      });
+      gsap.fromTo(
+        refs.resumeOverlaySheet,
+        { y: immediate || prefersReducedMotion ? 0 : window.innerHeight },
+        {
+          y: 0,
+          duration: immediate || prefersReducedMotion ? 0 : 0.72,
+          ease: "expo.inOut",
+          overwrite: "auto"
+        }
+      );
+      refs.resumeOverlay.focus({ preventScroll: true });
+      return;
+    }
+
+    const finishClose = () => {
+      if (!state.resumeOpen) {
+        refs.resumeOverlay.classList.remove("is-open");
+        gsap.set(refs.resumeOverlay, { pointerEvents: "none" });
+      }
+    };
+
+    if (immediate || prefersReducedMotion) {
+      gsap.set(refs.resumeOverlay, { autoAlpha: 0 });
+      gsap.set(refs.resumeOverlaySheet, { y: window.innerHeight });
+      gsap.set(refs.resumeOverlayArrow, { rotate: 0 });
+      finishClose();
+      return;
+    }
+
+    gsap
+      .timeline({
+        defaults: { overwrite: "auto" },
+        onComplete: finishClose
+      })
+      .to(
+        refs.resumeOverlaySheet,
+        {
+          y: window.innerHeight,
+          duration: 0.58,
+          ease: "expo.inOut"
+        },
+        0
+      )
+      .to(
+        refs.resumeOverlayArrow,
+        {
+          rotate: 0,
+          duration: 0.58,
+          ease: "power3.out"
+        },
+        0
+      )
+      .to(
+        refs.resumeOverlay,
+        {
+          autoAlpha: 0,
+          duration: 0.22,
+          ease: "power2.inOut"
+        },
+        0.34
+      );
+  }
+
+  function updateSectionHistory(sectionKey, { replace = false } = {}) {
+    const url = new URL(window.location.href);
+
+    if (sectionKey) {
+      url.searchParams.set("section", sectionKey === "portfolio" ? "projects" : sectionKey);
+    } else {
+      url.searchParams.delete("section");
+    }
+
+    url.searchParams.delete("preview");
+
+    const method = replace ? "replaceState" : "pushState";
+    window.history[method](
+      {
+        caseStudyProjectId: state.caseStudyProjectId,
+        openSection: sectionKey,
+        resumeOpen: state.resumeOpen
+      },
+      "",
+      `${url.pathname}${url.search}${url.hash}`
+    );
+  }
+
   async function openPortfolioProject(projectId) {
     if (!projectId || !projectLookup.has(projectId)) {
       return;
     }
 
+    closeResumeOverlay({ immediate: true });
+
     if (state.openSection !== "portfolio") {
       state.openSection = "portfolio";
       syncPanels(false);
+      updateSectionHistory("portfolio");
     }
 
     if (state.activeProjectId === projectId) {
@@ -959,9 +1423,12 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
   }
 
   function handlePopState() {
-    const nextProjectId = getCaseStudyProjectIdFromSearch(window.location.search, projectLookup);
+    const nextPreviewState = getPreviewState(window.location.search, projectLookup);
+    const nextProjectId = nextPreviewState.caseStudyProjectId;
 
     if (nextProjectId) {
+      state.resumeOpen = false;
+      syncResumeOverlay(true);
       openCaseStudy(nextProjectId, {
         immediate: false,
         updateHistory: false,
@@ -974,6 +1441,16 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
       immediate: false,
       historyMode: "none"
     });
+
+    state.openSection = nextPreviewState.openSection;
+    state.activeProjectId = nextPreviewState.activeProjectId ?? DEFAULT_ACTIVE_PROJECT_ID;
+    state.resumeOpen = Boolean(nextPreviewState.resumeOpen);
+    state.activeGalleryCategory = getSafeGalleryCategory(nextPreviewState.activeGalleryCategory);
+    syncPanels(false);
+    syncActiveProject(false);
+    syncResumeOverlay(false);
+    syncGalleryCategory(false);
+    refreshCursorFromLastPointer();
   }
 
   function requestCloseCaseStudy() {
@@ -997,6 +1474,8 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     if (!projectId || !projectLookup.has(projectId) || !hasProjectCaseStudy(projectLookup.get(projectId)) || state.viewerOpen) {
       return;
     }
+
+    closeResumeOverlay({ immediate: true });
 
     if (state.caseStudyOpen && state.caseStudyProjectId === projectId) {
       return;
@@ -1201,9 +1680,11 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
 
   function scheduleImagePreload() {
     const preload = () => {
-      projects.forEach((project) => {
-        preloadProjectImages(project.id);
-      });
+      const projectId = state.caseStudyProjectId ?? state.activeProjectId;
+
+      if (projectId) {
+        preloadProjectImages(projectId);
+      }
     };
 
     if ("requestIdleCallback" in window) {
@@ -1295,6 +1776,41 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
       .filter((item) => Boolean(item.src));
   }
 
+  function getVisualGalleryItems(category = null) {
+    return galleryItems
+      .map((item, index) => ({ ...item, id: item.id || `gallery-${index}`, index }))
+      .filter((item) => Boolean(getGallerySectionPreview(item)?.src))
+      .filter((item) => !category || item.category === category);
+  }
+
+  function getVisualGalleryItem(itemId) {
+    return getVisualGalleryItems().find((item) => item.id === itemId) ?? null;
+  }
+
+  function getGallerySectionFrames(section) {
+    const frames = Array.isArray(section?.frames) && section.frames.length ? section.frames : section?.src ? [section] : [];
+
+    return frames
+      .map((frame, index) => ({
+        ...frame,
+        id: frame.id || `${section.id || "gallery"}-${index}`,
+        index,
+        projectId: frame.projectId ?? section.projectId,
+        category: frame.category ?? section.category,
+        presentation: frame.presentation ?? section.presentation,
+        alt: frame.alt ?? getLocalizedText(section.description, content.locale) ?? ""
+      }))
+      .filter((frame) => Boolean(frame.src));
+  }
+
+  function getGallerySectionPreview(section) {
+    if (section?.preview) {
+      return section.preview;
+    }
+
+    return getGallerySectionFrames(section)[0] ?? null;
+  }
+
   function getProjectCaseStudyItems(projectId) {
     const project = projectLookup.get(projectId);
     if (!project || !hasProjectCaseStudy(project)) {
@@ -1326,10 +1842,22 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     return items.find((item) => item.index === state.viewerImageIndex) ?? items[0];
   }
 
+  function isFitOnlyViewerItem(item) {
+    return item?.category === "poster" || item?.presentation === "poster";
+  }
+
   function getGalleryTrigger(projectId, imageIndex) {
     return root.querySelector(
       `[data-project-card][data-project-id="${projectId}"] [data-project-gallery-trigger][data-project-gallery-index="${imageIndex}"]`
     );
+  }
+
+  function getVisualGalleryTrigger(itemId) {
+    if (!itemId) {
+      return null;
+    }
+
+    return root.querySelector(`[data-gallery-item-trigger][data-gallery-item-id="${escapeAttributeSelector(itemId)}"]`);
   }
 
   function getCaseStudyMediaTrigger(triggerKey) {
@@ -1366,6 +1894,31 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
         source: {
           type: "case-study",
           triggerKey: caseStudyTriggerKey
+        }
+      };
+    }
+
+    const galleryItemId = trigger.dataset.galleryItemId;
+    if (galleryItemId) {
+      const section = getVisualGalleryItem(galleryItemId);
+      if (!section) {
+        return null;
+      }
+
+      const items = getGallerySectionFrames(section);
+      if (!items.length) {
+        return null;
+      }
+
+      return {
+        projectId: section.projectId ?? null,
+        items,
+        activeIndex: items[0].index,
+        showSwitcher: items.length > 1,
+        renderKey: `visual-gallery:${section.id}`,
+        source: {
+          type: "visual-gallery",
+          itemId: section.id
         }
       };
     }
@@ -1538,7 +2091,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
       refs.viewerFrame.style.removeProperty("width");
       refs.viewerFrame.style.removeProperty("height");
       refs.viewerFrame.removeAttribute("data-viewer-active-item");
-      refs.viewerFrame.classList.remove("is-long-image");
+      refs.viewerFrame.classList.remove("is-long-image", "is-fit-image");
       refs.viewerFrame.scrollTop = 0;
       refs.viewerMedia.style.removeProperty("width");
       refs.viewerMedia.style.removeProperty("height");
@@ -1578,6 +2131,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     refs.viewerMedia.style.width = `${size.width}px`;
     refs.viewerMedia.style.height = `${size.mediaHeight}px`;
     refs.viewerFrame.classList.toggle("is-long-image", size.isLongImage);
+    refs.viewerFrame.classList.toggle("is-fit-image", size.isFitImage);
 
     if (immediate || !state.viewerOpen || prefersReducedMotion) {
       gsap.set(refs.viewerFrame, {
@@ -1605,7 +2159,9 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     const thumbLimit = viewerShowSwitcher
       ? Number.parseFloat(rootStyles.getPropertyValue("--viewer-thumb-limit")) || VIEWER_THUMB_HEIGHT
       : 0;
-    const maxHeightRatio = viewerShowSwitcher ? VIEWER_CONTENT_MAX_HEIGHT_RATIO : VIEWER_SINGLE_CONTENT_MAX_HEIGHT_RATIO;
+    const isFitImage = isFitOnlyViewerItem(item);
+    const maxHeightRatio =
+      !viewerShowSwitcher || isFitImage ? VIEWER_SINGLE_CONTENT_MAX_HEIGHT_RATIO : VIEWER_CONTENT_MAX_HEIGHT_RATIO;
     const availableWidth = Math.max(window.innerWidth - inlinePad * 2, 1);
     const paddedViewportHeight = window.innerHeight - topPad - bottomPad - gap - thumbLimit;
     const maxContentHeight = window.innerHeight * maxHeightRatio - gap - thumbLimit;
@@ -1614,7 +2170,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     const widthScale = availableWidth / baseWidth;
     const mediaHeightAtFullWidth = baseHeight * widthScale;
     const isLongImage =
-      baseHeight > VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD && mediaHeightAtFullWidth > availableHeight;
+      !isFitImage && baseHeight > VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD && mediaHeightAtFullWidth > availableHeight;
     const scale = isLongImage ? widthScale : Math.min(widthScale, availableHeight / baseHeight);
     const width = Math.max(1, baseWidth * scale);
     const mediaHeight = Math.max(1, baseHeight * scale);
@@ -1624,7 +2180,8 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
       width: Number.parseFloat(width.toFixed(3)),
       height: Number.parseFloat(height.toFixed(3)),
       mediaHeight: Number.parseFloat(mediaHeight.toFixed(3)),
-      isLongImage
+      isLongImage,
+      isFitImage
     };
   }
 
@@ -1762,6 +2319,8 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     const destinationTrigger =
       viewerSource?.type === "gallery"
         ? getGalleryTrigger(state.viewerProjectId, state.viewerImageIndex)
+        : viewerSource?.type === "visual-gallery"
+          ? getVisualGalleryTrigger(viewerSource?.itemId)
         : getCaseStudyMediaTrigger(viewerSource?.triggerKey);
     const destinationRect = destinationTrigger?.getBoundingClientRect() ?? getFallbackViewerTarget(currentRect);
     const transform = getRelativeTransform(destinationRect, currentRect);
@@ -1798,7 +2357,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
         delete refs.viewerThumbs.dataset.viewerKey;
         refs.viewerFrame.removeAttribute("aria-label");
         refs.viewerFrame.removeAttribute("data-viewer-active-item");
-        refs.viewerFrame.classList.remove("is-long-image");
+        refs.viewerFrame.classList.remove("is-long-image", "is-fit-image");
         refs.viewerMedia.style.removeProperty("width");
         refs.viewerMedia.style.removeProperty("height");
         refs.viewerFrame.scrollTop = 0;
@@ -1887,7 +2446,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     });
     applyHeroVariables();
 
-    const sectionIntroOrder = [panels.portfolio.bar, panels.resume.bar];
+    const sectionIntroOrder = [panels.gallery.bar, panels.portfolio.bar];
 
     const timeline = gsap.timeline({
       onComplete: () => {
@@ -2040,16 +2599,20 @@ function renderApp(content, state) {
           <div class="hero-lockup" data-hero-lockup>
             <h1 class="hero-name" data-hero-name>${renderSmallCapsName(content.hero.name)}</h1>
             <p class="hero-tagline" data-hero-tagline lang="${content.hero.taglineLang}">${content.hero.tagline}</p>
+            <button class="hero-resume-button" type="button" data-hero-resume-trigger>
+              ${escapeHtml(content.hero.resumeButtonLabel || content.resume.label)}
+            </button>
             ${renderHeroDesktopHint(content.hero.desktopHint)}
           </div>
         </main>
 
         <div class="section-panels">
-          ${renderResumePanel(content)}
+          ${renderGalleryPanel(content, state)}
           ${renderPortfolioPanel(content)}
         </div>
       </div>
 
+      ${renderResumeOverlay(content)}
       ${renderCaseStudyLayer(content)}
       ${renderImageViewer(content)}
     </div>
@@ -2128,26 +2691,49 @@ function renderCaseStudyLayer(content) {
 function getPreviewState(search, projectLookup) {
   const params = new URLSearchParams(search);
   const previewValue = params.get("preview");
+  const sectionValue = params.get("section");
   const caseStudyProjectId = getCaseStudyProjectIdFromSearch(search, projectLookup);
+  const sectionFromQuery = normalizeSectionKey(sectionValue);
   if (!previewValue) {
     return {
       activeProjectId: caseStudyProjectId,
-      openSection: caseStudyProjectId ? "portfolio" : null,
+      openSection: caseStudyProjectId ? "portfolio" : sectionFromQuery,
+      resumeOpen: false,
+      activeGalleryCategory: DEFAULT_GALLERY_CATEGORY,
       caseStudyProjectId
     };
   }
 
   const [sectionCandidate, projectCandidate] = previewValue.split(":");
-  const previewOpenSection = SECTION_ORDER.includes(sectionCandidate) ? sectionCandidate : null;
+  const previewOpenSection = normalizeSectionKey(sectionCandidate);
+  const previewResumeOpen = sectionCandidate === "resume";
   const previewActiveProjectId = projectCandidate && projectLookup.has(projectCandidate) ? projectCandidate : null;
   const activeProjectId = caseStudyProjectId ?? previewActiveProjectId;
-  const openSection = caseStudyProjectId ? "portfolio" : previewOpenSection;
+  const openSection = caseStudyProjectId ? "portfolio" : previewOpenSection ?? sectionFromQuery;
 
   return {
     activeProjectId,
     openSection,
+    resumeOpen: previewResumeOpen && !caseStudyProjectId,
+    activeGalleryCategory: DEFAULT_GALLERY_CATEGORY,
     caseStudyProjectId
   };
+}
+
+function getSafeGalleryCategory(category) {
+  return galleryCategories.some(({ id }) => id === category) ? category : DEFAULT_GALLERY_CATEGORY;
+}
+
+function normalizeSectionKey(value) {
+  if (value === "projects") {
+    return "portfolio";
+  }
+
+  if (SECTION_ORDER.includes(value)) {
+    return value;
+  }
+
+  return null;
 }
 
 function getStoredLightEffectsPreference({ prefersReducedMotion } = {}) {
@@ -2243,74 +2829,232 @@ function renderSmallCapsName(name) {
     .join("");
 }
 
-function renderResumePanel(content) {
+function renderResumeOverlay(content) {
   const { resume } = content;
 
   return `
-    <section class="section-panel section-panel--resume" data-section-panel="resume">
+    <div
+      class="resume-overlay"
+      data-resume-overlay
+      aria-hidden="true"
+      aria-label="${escapeHtml(resume.label)}"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+    >
+      <div class="resume-overlay__sheet" data-resume-overlay-sheet>
+        <button
+          class="section-bar resume-overlay__bar"
+          type="button"
+          data-resume-overlay-close
+          aria-label="${escapeHtml(content.resume.closeAriaLabel || content.cursor.closeLabel)}"
+        >
+          <span class="section-bar__title">${escapeHtml(resume.label)}</span>
+          <span class="section-bar__arrow" data-resume-overlay-arrow aria-hidden="true">↓</span>
+        </button>
+
+        <div class="resume-overlay__body">
+          ${renderResumeSheet(resume)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderResumeSheet(resume) {
+  return `
+    <div class="resume-sheet">
+      <div class="resume-column resume-column--left">
+        <section class="resume-cell resume-cell--profile">
+          <div class="resume-profile">
+            <h2 class="resume-section-title">${escapeHtml(resume.profile.name)}</h2>
+            <p class="resume-profile__summary">${escapeHtml(resume.profile.summary)}</p>
+          </div>
+
+          <div class="resume-actions">
+            ${resume.profile.actions.map(renderResumeAction).join("")}
+          </div>
+        </section>
+
+        <section class="resume-cell resume-cell--scrollable">
+          <div class="resume-cell__scroll">
+            <h2 class="resume-section-title">${escapeHtml(resume.skillsTitle)}</h2>
+            <div class="resume-skill-groups">
+              ${resume.skillGroups.map(renderResumeSkillGroup).join("")}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="resume-column resume-column--right">
+        <section class="resume-cell resume-cell--scrollable resume-cell--experiences">
+          <div class="resume-cell__scroll">
+            <h2 class="resume-section-title">${escapeHtml(resume.experiencesTitle)}</h2>
+            <div class="resume-experience-list">
+              ${resume.experiences.map(renderResumeExperience).join("")}
+            </div>
+          </div>
+        </section>
+
+        <section class="resume-cell resume-cell--footer">
+          <div class="resume-featured">
+            <p class="resume-featured__label">
+              <span>${escapeHtml(resume.featuredLabel)}</span>
+              <span aria-hidden="true">→</span>
+            </p>
+
+            <div class="resume-featured__actions">
+              ${resume.featuredProjects.map(renderResumeFeaturedProject).join("")}
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  `;
+}
+
+function renderGalleryPanel(content, state) {
+  return `
+    <section class="section-panel section-panel--gallery" data-section-panel="gallery">
       <button
         class="section-bar"
         type="button"
         data-section-toggle
         aria-expanded="false"
-        aria-controls="resume-content"
+        aria-controls="gallery-content"
       >
-        <span class="section-bar__title">${escapeHtml(resume.label)}</span>
+        <span class="section-bar__title">${escapeHtml(content.gallery.label)}</span>
         <span class="section-bar__arrow" data-section-arrow>↓</span>
       </button>
 
-      <div class="section-panel__body" id="resume-content" data-section-body aria-hidden="true">
-        <div class="section-panel__inner section-panel__inner--resume">
-          <div class="resume-sheet">
-            <div class="resume-column resume-column--left">
-              <section class="resume-cell resume-cell--profile">
-                <div class="resume-profile">
-                  <h2 class="resume-section-title">${escapeHtml(resume.profile.name)}</h2>
-                  <p class="resume-profile__summary">${escapeHtml(resume.profile.summary)}</p>
-                </div>
-
-                <div class="resume-actions">
-                  ${resume.profile.actions.map(renderResumeAction).join("")}
-                </div>
-              </section>
-
-              <section class="resume-cell resume-cell--scrollable">
-                <div class="resume-cell__scroll">
-                  <h2 class="resume-section-title">${escapeHtml(resume.skillsTitle)}</h2>
-                  <div class="resume-skill-groups">
-                    ${resume.skillGroups.map(renderResumeSkillGroup).join("")}
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            <div class="resume-column resume-column--right">
-              <section class="resume-cell resume-cell--scrollable resume-cell--experiences">
-                <div class="resume-cell__scroll">
-                  <h2 class="resume-section-title">${escapeHtml(resume.experiencesTitle)}</h2>
-                  <div class="resume-experience-list">
-                    ${resume.experiences.map(renderResumeExperience).join("")}
-                  </div>
-                </div>
-              </section>
-
-              <section class="resume-cell resume-cell--footer">
-                <div class="resume-featured">
-                  <p class="resume-featured__label">
-                    <span>${escapeHtml(resume.featuredLabel)}</span>
-                    <span aria-hidden="true">→</span>
-                  </p>
-
-                  <div class="resume-featured__actions">
-                    ${resume.featuredProjects.map(renderResumeFeaturedProject).join("")}
-                  </div>
-                </div>
-              </section>
-            </div>
-          </div>
+      <div class="section-panel__body" id="gallery-content" data-section-body aria-hidden="true">
+        <div class="section-panel__inner section-panel__inner--gallery gallery-layout">
+          ${renderGalleryGrid(content)}
+          ${renderGalleryCategories(content, state)}
         </div>
       </div>
     </section>
+  `;
+}
+
+function renderGalleryGrid(content) {
+  return `
+    <div class="gallery-grid" data-gallery-grid>
+      <div class="gallery-fill-layer" data-gallery-fill-layer aria-hidden="true"></div>
+      ${galleryItems.map((item, index) => renderGalleryItem(item, index, content)).join("")}
+      ${renderGalleryPlaceholder(content)}
+    </div>
+  `;
+}
+
+function getGalleryPreviewSrc(preview) {
+  const explicitPreviewSrc = preview?.previewSrc ?? preview?.thumbnailSrc;
+
+  if (explicitPreviewSrc) {
+    return explicitPreviewSrc;
+  }
+
+  const source = preview?.src ?? "";
+  const galleryPrefix = "/images/gallery/";
+
+  if (!source.startsWith(galleryPrefix)) {
+    return source;
+  }
+
+  return source.replace(galleryPrefix, "/images/gallery-previews/").replace(/\.[^.]+$/, ".jpg");
+}
+
+function renderGalleryItem(item, index, content) {
+  const frames = Array.isArray(item?.frames) ? item.frames : [];
+  const preview = item?.preview ?? frames[0] ?? item;
+
+  if (!preview?.src) {
+    return "";
+  }
+
+  const width = Math.max(preview.width || item.width || 1, 1);
+  const height = Math.max(preview.height || item.height || 1, 1);
+  const previewSrc = getGalleryPreviewSrc(preview);
+  const itemId = item.id || `gallery-${index}`;
+  const category = item.category || "ui";
+  const presentation = item.presentation || preview.presentation || "default";
+  const presentationClass = presentation ? ` gallery-card--${escapeHtml(presentation)}` : "";
+  const isLongPreview = category !== "poster" && height > VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD;
+  const description = getLocalizedText(item.description, content.locale);
+  const accessibleLabel = `${content.cursor.viewLabel} ${preview.alt || item.alt || description || itemId}`;
+  const descriptionMarkup = description
+    ? `<figcaption class="gallery-card__description">${escapeHtml(description)}</figcaption>`
+    : "";
+
+  return `
+    <figure
+      class="gallery-card${presentationClass}${isLongPreview ? " gallery-card--long-preview" : ""}${description ? "" : " gallery-card--media-only"}"
+      data-gallery-item
+      data-gallery-item-id="${escapeHtml(itemId)}"
+      data-gallery-item-category="${escapeHtml(category)}"
+      style="${escapeHtml(`--gallery-item-ratio: ${width} / ${height};`)}"
+      >
+      <button
+        class="gallery-card__trigger"
+        type="button"
+        data-gallery-item-trigger
+        data-gallery-item-id="${escapeHtml(itemId)}"
+        aria-label="${escapeHtml(accessibleLabel)}"
+      >
+        <span class="gallery-card__media">
+          <img
+            class="gallery-card__image"
+            src="${escapeHtml(previewSrc)}"
+            alt=""
+            width="${width}"
+            height="${height}"
+            loading="lazy"
+            decoding="async"
+            fetchpriority="low"
+          />
+        </span>
+      </button>
+      ${descriptionMarkup}
+    </figure>
+  `;
+}
+
+function renderGalleryPlaceholder(content) {
+  const variants = ["wide", "tall", "square", "poster", "landscape", "portrait"];
+
+  return variants
+    .map(
+      (variant) => `
+        <figure class="gallery-card gallery-card--placeholder gallery-card--placeholder-${variant}" data-gallery-placeholder>
+          <div class="gallery-card__placeholder" role="img" aria-label="${escapeHtml(content.gallery.placeholderLabel)}"></div>
+        </figure>
+      `
+    )
+    .join("");
+}
+
+function renderGalleryCategories(content, state) {
+  const activeCategory = getSafeGalleryCategory(state.activeGalleryCategory);
+
+  return `
+    <div class="gallery-categories" data-gallery-categories aria-label="${escapeHtml(content.gallery.categoriesLabel)}">
+      <span class="gallery-category-indicator" data-gallery-category-indicator aria-hidden="true"></span>
+      ${galleryCategories
+        .map((category) => {
+          const isActive = category.id === activeCategory;
+          return `
+            <button
+              class="gallery-category${isActive ? " is-active" : ""}"
+              type="button"
+              data-gallery-category="${escapeHtml(category.id)}"
+              aria-pressed="${String(isActive)}"
+            >
+              ${escapeHtml(getLocalizedText(category.label, content.locale) || category.id)}
+            </button>
+          `;
+        })
+        .join("")}
+    </div>
   `;
 }
 
@@ -3407,6 +4151,26 @@ function getCaseStudyProjectIdFromSearch(search, projectLookup) {
   const projectId = new URLSearchParams(search).get("case-study");
   const project = projectId ? projectLookup.get(projectId) : null;
   return project && hasProjectCaseStudy(project) ? projectId : null;
+}
+
+function getLocalizedText(value, locale) {
+  if (!value) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return value[locale] ?? value.en ?? "";
+}
+
+function escapeAttributeSelector(value) {
+  if (globalThis.CSS?.escape) {
+    return globalThis.CSS.escape(String(value));
+  }
+
+  return String(value).replace(/["\\]/g, "\\$&");
 }
 
 function getEscapeMap() {

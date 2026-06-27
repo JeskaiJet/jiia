@@ -12,6 +12,7 @@ export const zhContent = {
     name: "Chris Jia",
     tagline: "is a product designer & builder",
     taglineLang: "en",
+    resumeButtonLabel: "Resume",
     desktopHint: "For better experience, view it on desktop."
   },
   cursor: {
@@ -21,6 +22,7 @@ export const zhContent = {
   },
   resume: {
     label: "简历",
+    closeAriaLabel: "关闭简历",
     profile: {
       name: "Chris Jia/贾佳豪",
       summary: "具备 UI、产品设计与前端落地经验的产品设计师。",
@@ -98,7 +100,7 @@ export const zhContent = {
     ]
   },
   portfolio: {
-    label: "作品集",
+    label: "Projects",
     overline: "项目列表",
     intro:
       "项目数据仍然独立维护。把鼠标移动到不同行时，条目会展开并显示占位图片、描述与标签信息。",
@@ -107,6 +109,11 @@ export const zhContent = {
     typeLabel: "类型",
     platformLabel: "平台",
     yearLabel: "年份"
+  },
+  gallery: {
+    label: "Gallery",
+    categoriesLabel: "Gallery 分类",
+    placeholderLabel: "Gallery 图片占位"
   },
   caseStudy: {
     ariaLabel: "案例详情",

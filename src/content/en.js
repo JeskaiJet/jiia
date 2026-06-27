@@ -12,6 +12,7 @@ export const enContent = {
     name: "CHRIS JIA",
     tagline: "is a product designer & builder",
     taglineLang: "en",
+    resumeButtonLabel: "Resume",
     desktopHint: "For better experience, view it on desktop."
   },
   cursor: {
@@ -21,6 +22,7 @@ export const enContent = {
   },
   resume: {
     label: "Resume",
+    closeAriaLabel: "Close resume",
     profile: {
       name: "Chris Jia",
       summary: "Product Designer with UI, product, and front-end execution experience.",
@@ -98,7 +100,7 @@ export const enContent = {
     ]
   },
   portfolio: {
-    label: "Portfolio",
+    label: "Projects",
     overline: "Selected projects",
     intro:
       "Project entries stay data-driven. Hover or focus a row to expand it and preview the current placeholder media and metadata.",
@@ -107,6 +109,11 @@ export const enContent = {
     typeLabel: "Type",
     platformLabel: "Platform",
     yearLabel: "Year"
+  },
+  gallery: {
+    label: "Gallery",
+    categoriesLabel: "Gallery categories",
+    placeholderLabel: "Gallery image placeholder"
   },
   caseStudy: {
     ariaLabel: "Case study",
