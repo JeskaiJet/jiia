@@ -17,6 +17,10 @@ const VIEWER_THUMB_HEIGHT = 64;
 const VIEWER_CONTENT_MAX_HEIGHT_RATIO = 0.88;
 const VIEWER_SINGLE_CONTENT_MAX_HEIGHT_RATIO = 0.96;
 const VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD = 2500;
+const VIEWER_MOBILE_WIDTH_THRESHOLD = 720;
+const VIEWER_MOBILE_LONG_IMAGE_WIDTH_RATIO = 0.78;
+const VIEWER_MOBILE_LONG_IMAGE_MAX_WIDTH = 328;
+const VIEWER_PHONE_IMAGE_MAX_WIDTH = 420;
 const PROJECT_DETAIL_DURATION = 0.52;
 const PROJECT_DETAIL_INNER_DURATION = 0.42;
 const PROJECT_SCROLL_DURATION = 0.44;
@@ -1744,11 +1748,36 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     return Promise.all(getProjectMediaItems(projectId).map((item) => preloadImage(item.src)));
   }
 
-  function getPreloadedImageClone(src) {
+  function preloadViewerItems(items, activeIndex) {
+    const activeItem = items.find((item) => item.index === activeIndex) ?? items[0];
+
+    if (activeItem) {
+      preloadImage(activeItem.src);
+    }
+
+    const preloadRest = () => {
+      items.forEach((item) => {
+        if (item !== activeItem) {
+          preloadImage(item.src);
+        }
+      });
+    };
+
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(preloadRest, { timeout: 900 });
+      return;
+    }
+
+    window.setTimeout(preloadRest, 160);
+  }
+
+  function getPreloadedImageClone(src, { priority = "auto", loading = "eager" } = {}) {
     const cachedImage = preloadedImages.get(src)?.image;
     const image = cachedImage ? cachedImage.cloneNode(false) : document.createElement("img");
     image.src = cachedImage?.currentSrc || cachedImage?.src || src;
     image.decoding = "async";
+    image.loading = loading;
+    image.fetchPriority = priority;
     return image;
   }
 
@@ -1844,6 +1873,10 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
 
   function isFitOnlyViewerItem(item) {
     return item?.category === "poster" || item?.presentation === "poster";
+  }
+
+  function isPhoneViewerItem(item) {
+    return item?.presentation === "phone" || (item?.width <= 900 && item?.height > item?.width * 2);
   }
 
   function getGalleryTrigger(projectId, imageIndex) {
@@ -1951,7 +1984,35 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     };
   }
 
-  function createProjectMediaNode(item, variant) {
+  function createDeferredViewerImage(src) {
+    const image = document.createElement("img");
+    image.dataset.viewerImageSrc = src;
+    image.decoding = "async";
+    image.loading = "lazy";
+    image.fetchPriority = "low";
+    return image;
+  }
+
+  function hydrateViewerSlideImage(slide) {
+    const image = slide?.querySelector("[data-viewer-image-src]");
+
+    if (!image || image.currentSrc || image.hasAttribute("src")) {
+      return;
+    }
+
+    const src = image.dataset.viewerImageSrc;
+    if (!src) {
+      return;
+    }
+
+    const cachedImage = preloadedImages.get(src)?.image;
+    image.src = cachedImage?.currentSrc || cachedImage?.src || src;
+    image.loading = "eager";
+    image.fetchPriority = "high";
+    preloadImage(src);
+  }
+
+  function createProjectMediaNode(item, variant, { isActive = false } = {}) {
     const hasOverflowCrop = variant !== "viewer" && item.className?.includes("overflow");
     const variantMap = {
       viewer: {
@@ -1972,7 +2033,14 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     const config = variantMap[variant];
     const frame = document.createElement("span");
     const media = document.createElement("span");
-    const image = getPreloadedImageClone(item.src);
+    const imageSrc = variant === "thumb" ? item.thumbnailSrc || item.previewSrc || item.src : item.src;
+    const image =
+      variant === "viewer" && !isActive
+        ? createDeferredViewerImage(imageSrc)
+        : getPreloadedImageClone(imageSrc, {
+            priority: variant === "viewer" ? "high" : "low",
+            loading: variant === "viewer" ? "eager" : "lazy"
+          });
     const dimensions = getImageDimensions(item, variant);
 
     frame.className = config.frameClass;
@@ -2017,7 +2085,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
       slide.dataset.imageViewerSlide = "";
       slide.dataset.imageViewerIndex = String(item.index);
       slide.setAttribute("aria-hidden", String(item.index !== activeIndex));
-      slide.append(createProjectMediaNode(item, "viewer"));
+      slide.append(createProjectMediaNode(item, "viewer", { isActive: item.index === activeIndex }));
       slideFragment.append(slide);
 
       if (viewerShowSwitcher) {
@@ -2049,6 +2117,8 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     if (!activeSlide) {
       return;
     }
+
+    hydrateViewerSlideImage(activeSlide);
 
     if (immediate || prefersReducedMotion) {
       gsap.set(activeSlide, { autoAlpha: 1 });
@@ -2171,7 +2241,14 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     const mediaHeightAtFullWidth = baseHeight * widthScale;
     const isLongImage =
       !isFitImage && baseHeight > VIEWER_LONG_IMAGE_HEIGHT_THRESHOLD && mediaHeightAtFullWidth > availableHeight;
-    const scale = isLongImage ? widthScale : Math.min(widthScale, availableHeight / baseHeight);
+    const isPhoneLongImage = isLongImage && isPhoneViewerItem(item);
+    const phoneLongImageWidth =
+      window.innerWidth <= VIEWER_MOBILE_WIDTH_THRESHOLD
+        ? Math.min(window.innerWidth * VIEWER_MOBILE_LONG_IMAGE_WIDTH_RATIO, VIEWER_MOBILE_LONG_IMAGE_MAX_WIDTH)
+        : VIEWER_PHONE_IMAGE_MAX_WIDTH;
+    const longImageWidth = isPhoneLongImage ? Math.min(availableWidth, phoneLongImageWidth) : availableWidth;
+    const longImageScale = longImageWidth / baseWidth;
+    const scale = isLongImage ? longImageScale : Math.min(widthScale, availableHeight / baseHeight);
     const width = Math.max(1, baseWidth * scale);
     const mediaHeight = Math.max(1, baseHeight * scale);
     const height = Math.min(mediaHeight, availableHeight);
@@ -2199,7 +2276,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     setHiddenOriginTrigger(null);
   }
 
-  async function openImageViewer(trigger, { immediate = false } = {}) {
+  function openImageViewer(trigger, { immediate = false } = {}) {
     if (viewerAnimating) {
       return;
     }
@@ -2212,7 +2289,7 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     const requestId = pendingViewerImageRequest + 1;
     pendingViewerImageRequest = requestId;
     viewerAnimating = true;
-    await Promise.all(payload.items.map((item) => preloadImage(item.src)));
+    preloadViewerItems(payload.items, payload.activeIndex);
 
     if (requestId !== pendingViewerImageRequest) {
       clearHiddenOriginTrigger();
@@ -2419,14 +2496,14 @@ export function createPortfolioApp(root, { locale, deferEntranceMotion = false }
     const requestId = pendingViewerImageRequest + 1;
     pendingViewerImageRequest = requestId;
 
-    preloadImage(nextItem.src).finally(() => {
-      if (requestId !== pendingViewerImageRequest || !state.viewerOpen) {
-        return;
-      }
+    state.viewerImageIndex = nextIndex;
+    syncImageViewer(false);
+    refreshCursorFromLastPointer();
 
-      state.viewerImageIndex = nextIndex;
-      syncImageViewer(false);
-      refreshCursorFromLastPointer();
+    preloadImage(nextItem.src).finally(() => {
+      if (requestId === pendingViewerImageRequest && state.viewerOpen) {
+        syncImageViewer(true);
+      }
     });
   }
 
@@ -2961,7 +3038,7 @@ function getGalleryPreviewSrc(preview) {
     return source;
   }
 
-  return source.replace(galleryPrefix, "/images/gallery-previews/").replace(/\.[^.]+$/, ".jpg");
+  return source.replace(galleryPrefix, "/images/gallery-previews/").replace(/\.[^.]+$/, ".webp");
 }
 
 function renderGalleryItem(item, index, content) {

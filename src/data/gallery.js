@@ -7,7 +7,7 @@ const localizedLabel = (label) => ({ en: label, zh: label });
 
 const galleryFrame = (folder, id, alt, width, height) => ({
   id,
-  src: `/images/gallery/${folder}/${id}.png`,
+  src: `/images/gallery/${folder}/${id}.webp`,
   alt,
   width,
   height
@@ -26,21 +26,21 @@ export const galleryItems = [
     frames: [
       {
         id: "tabmac-homepage-locations",
-        src: "/images/gallery/tabmac/tabmac-homepage-locations.png",
+        src: "/images/gallery/tabmac/tabmac-homepage-locations.webp",
         alt: "Tabmac Homepage - Locations",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-homepage-locations-scrolling",
-        src: "/images/gallery/tabmac/tabmac-homepage-locations-scrolling.png",
+        src: "/images/gallery/tabmac/tabmac-homepage-locations-scrolling.webp",
         alt: "Tabmac Homepage - Locations Scrolling",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-homepage-locations-map",
-        src: "/images/gallery/tabmac/tabmac-homepage-locations-map.png",
+        src: "/images/gallery/tabmac/tabmac-homepage-locations-map.webp",
         alt: "Tabmac Homepage - Map",
         width: 804,
         height: 1748
@@ -59,28 +59,28 @@ export const galleryItems = [
     frames: [
       {
         id: "tabmac-order-store-page-selected",
-        src: "/images/gallery/tabmac/tabmac-order-store-page-selected.png",
+        src: "/images/gallery/tabmac/tabmac-order-store-page-selected.webp",
         alt: "Tabmac - Oder - Store page selected",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-order-confirm",
-        src: "/images/gallery/tabmac/tabmac-order-confirm.png",
+        src: "/images/gallery/tabmac/tabmac-order-confirm.webp",
         alt: "Tabmac - Oder - Confirm",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-order-confirmed",
-        src: "/images/gallery/tabmac/tabmac-order-confirmed.png",
+        src: "/images/gallery/tabmac/tabmac-order-confirmed.webp",
         alt: "Tabmac - Oder - Confirmed",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-order-edit-usage",
-        src: "/images/gallery/tabmac/tabmac-order-edit-usage.png",
+        src: "/images/gallery/tabmac/tabmac-order-edit-usage.webp",
         alt: "Tabmac - Oder - Edit Usage",
         width: 804,
         height: 1748
@@ -99,21 +99,21 @@ export const galleryItems = [
     frames: [
       {
         id: "tabmac-tip",
-        src: "/images/gallery/tabmac/tabmac-tip.png",
+        src: "/images/gallery/tabmac/tabmac-tip.webp",
         alt: "Tabmac - Tip",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-tip-select-payment-method",
-        src: "/images/gallery/tabmac/tabmac-tip-select-payment-method.png",
+        src: "/images/gallery/tabmac/tabmac-tip-select-payment-method.webp",
         alt: "Tabmac - Tip - Select payment method",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-tip-succeed",
-        src: "/images/gallery/tabmac/tabmac-tip-succeed.png",
+        src: "/images/gallery/tabmac/tabmac-tip-succeed.webp",
         alt: "Tabmac - Tip - Succeed",
         width: 804,
         height: 1748
@@ -132,56 +132,56 @@ export const galleryItems = [
     frames: [
       {
         id: "tabmac-account",
-        src: "/images/gallery/tabmac/tabmac-account.png",
+        src: "/images/gallery/tabmac/tabmac-account.webp",
         alt: "Tabmac - Account & Onboarding - Account",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-account-onboarding",
-        src: "/images/gallery/tabmac/tabmac-account-onboarding.png",
+        src: "/images/gallery/tabmac/tabmac-account-onboarding.webp",
         alt: "Tabmac - Account & Onboarding - Account Onboarding",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-onboarding-1",
-        src: "/images/gallery/tabmac/tabmac-onboarding-1.png",
+        src: "/images/gallery/tabmac/tabmac-onboarding-1.webp",
         alt: "Tabmac - Account & Onboarding - Onboarding 1",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-onboarding-1-5",
-        src: "/images/gallery/tabmac/tabmac-onboarding-1-5.png",
+        src: "/images/gallery/tabmac/tabmac-onboarding-1-5.webp",
         alt: "Tabmac - Account & Onboarding - Onboarding 1.5",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-onboarding-2",
-        src: "/images/gallery/tabmac/tabmac-onboarding-2.png",
+        src: "/images/gallery/tabmac/tabmac-onboarding-2.webp",
         alt: "Tabmac - Account & Onboarding - Onboarding 2",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-onboarding-3",
-        src: "/images/gallery/tabmac/tabmac-onboarding-3.png",
+        src: "/images/gallery/tabmac/tabmac-onboarding-3.webp",
         alt: "Tabmac - Account & Onboarding - Onboarding 3",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-onboarding-4",
-        src: "/images/gallery/tabmac/tabmac-onboarding-4.png",
+        src: "/images/gallery/tabmac/tabmac-onboarding-4.webp",
         alt: "Tabmac - Account & Onboarding - Onboarding 4",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-onboarding-5",
-        src: "/images/gallery/tabmac/tabmac-onboarding-5.png",
+        src: "/images/gallery/tabmac/tabmac-onboarding-5.webp",
         alt: "Tabmac - Account & Onboarding - Onboarding 5",
         width: 804,
         height: 1748
@@ -200,14 +200,14 @@ export const galleryItems = [
     frames: [
       {
         id: "tabmac-checkout-app-clip",
-        src: "/images/gallery/tabmac/tabmac-checkout-app-clip.png",
+        src: "/images/gallery/tabmac/tabmac-checkout-app-clip.webp",
         alt: "Tabmac - Checkout - App Clip",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-checkout",
-        src: "/images/gallery/tabmac/tabmac-checkout.png",
+        src: "/images/gallery/tabmac/tabmac-checkout.webp",
         alt: "Tabmac - Checkout",
         width: 804,
         height: 1748
@@ -226,35 +226,35 @@ export const galleryItems = [
     frames: [
       {
         id: "tabmac-business-home-signed-out",
-        src: "/images/gallery/tabmac/tabmac-business-home-signed-out.png",
+        src: "/images/gallery/tabmac/tabmac-business-home-signed-out.webp",
         alt: "Tabmac Business - Home Signed out",
         width: 2880,
         height: 2048
       },
       {
         id: "tabmac-business-home-signed-in",
-        src: "/images/gallery/tabmac/tabmac-business-home-signed-in.png",
+        src: "/images/gallery/tabmac/tabmac-business-home-signed-in.webp",
         alt: "Tabmac Business - Home Signed in",
         width: 2880,
         height: 2048
       },
       {
         id: "tabmac-business-recurring-purchase-item-select",
-        src: "/images/gallery/tabmac/tabmac-business-recurring-purchase-item-select.png",
+        src: "/images/gallery/tabmac/tabmac-business-recurring-purchase-item-select.webp",
         alt: "Tabmac Business - Rurring Purchase Item select",
         width: 2880,
         height: 2048
       },
       {
         id: "tabmac-business-storage",
-        src: "/images/gallery/tabmac/tabmac-business-storage.png",
+        src: "/images/gallery/tabmac/tabmac-business-storage.webp",
         alt: "Tabmac Business - Storage",
         width: 2880,
         height: 2048
       },
       {
         id: "tabmac-business-team-detail",
-        src: "/images/gallery/tabmac/tabmac-business-team-detail.png",
+        src: "/images/gallery/tabmac/tabmac-business-team-detail.webp",
         alt: "Tabmac Business - Team Detail",
         width: 2880,
         height: 2048
@@ -273,35 +273,35 @@ export const galleryItems = [
     frames: [
       {
         id: "tabmac-redeem-app-clip",
-        src: "/images/gallery/tabmac/tabmac-redeem-app-clip.png",
+        src: "/images/gallery/tabmac/tabmac-redeem-app-clip.webp",
         alt: "Tabmac - Redeem - App Clip",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-redeem-enter-key",
-        src: "/images/gallery/tabmac/tabmac-redeem-enter-key.png",
+        src: "/images/gallery/tabmac/tabmac-redeem-enter-key.webp",
         alt: "Tabmac - Redeem - Enter Key",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-redeem",
-        src: "/images/gallery/tabmac/tabmac-redeem.png",
+        src: "/images/gallery/tabmac/tabmac-redeem.webp",
         alt: "Tabmac - Redeem",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-redeem-add-into-account-in-appclip",
-        src: "/images/gallery/tabmac/tabmac-redeem-add-into-account-in-appclip.png",
+        src: "/images/gallery/tabmac/tabmac-redeem-add-into-account-in-appclip.webp",
         alt: "Tabmac - Redeem - Add into Account in App Clip",
         width: 804,
         height: 1748
       },
       {
         id: "tabmac-redeem-new-plan",
-        src: "/images/gallery/tabmac/tabmac-redeem-new-plan.png",
+        src: "/images/gallery/tabmac/tabmac-redeem-new-plan.webp",
         alt: "Tabmac - Redeem - New Plan",
         width: 804,
         height: 1748
@@ -320,14 +320,14 @@ export const galleryItems = [
     frames: [
       {
         id: "tabmac-mail-business-team-invite",
-        src: "/images/gallery/tabmac/tabmac-mail-business-team-invite.png",
+        src: "/images/gallery/tabmac/tabmac-mail-business-team-invite.webp",
         alt: "Tabmac - Mail Template - Business Team Invite",
         width: 1190,
         height: 1684
       },
       {
         id: "tabmac-mail-allocate-notification",
-        src: "/images/gallery/tabmac/tabmac-mail-allocate-notification.png",
+        src: "/images/gallery/tabmac/tabmac-mail-allocate-notification.webp",
         alt: "Tabmac - Mail Template - Allocate Notification",
         width: 1190,
         height: 1684
